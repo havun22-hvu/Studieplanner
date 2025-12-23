@@ -13,7 +13,9 @@ import { MentorView } from './components/MentorView';
 import { MentorDashboard } from './components/MentorDashboard';
 import { StatsView } from './components/StatsView';
 import { SharePage } from './components/SharePage';
-import { autoPlanningSessions, generateId, rescheduleMissedSessions } from './utils/planning';
+import { autoPlanningSessions, generateId, rescheduleMissedSessions, calculateCatchUpNeeded } from './utils/planning';
+import type { CatchUpSuggestion } from './utils/planning';
+import { CatchUpModal } from './components/CatchUpModal';
 import { AuthScreen } from './components/AuthScreen';
 import { useAuth } from './contexts/AuthContext';
 import './App.css';
@@ -195,6 +197,50 @@ function StudentApp() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
+
+  // Check for catch-up suggestions
+  const [catchUpSuggestions, setCatchUpSuggestions] = useState<CatchUpSuggestion[]>([]);
+
+  useEffect(() => {
+    const lastCheck = localStorage.getItem('studieplanner-last-catchup-check');
+    const today = new Date().toISOString().split('T')[0];
+
+    // Only check once per day
+    if (lastCheck === today) return;
+
+    const suggestions = calculateCatchUpNeeded(subjects, sessions, settings);
+    if (suggestions.length > 0) {
+      setCatchUpSuggestions(suggestions);
+    }
+    localStorage.setItem('studieplanner-last-catchup-check', today);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
+
+  const handleAcceptCatchUp = (subjectId: string, extraSessions: { date: string; minutes: number }[]) => {
+    const subject = subjects.find(s => s.id === subjectId);
+    if (!subject) return;
+
+    // Find the first incomplete task for this subject
+    const task = subject.tasks.find(t => !t.completed);
+    if (!task) return;
+
+    // Create new sessions
+    const newSessions = extraSessions.map(({ date, minutes }) => ({
+      id: generateId(),
+      date,
+      taskId: task.id,
+      subjectId,
+      minutesPlanned: minutes,
+      amountPlanned: task.plannedAmount,
+      unit: task.unit,
+      completed: false,
+    }));
+
+    setSessions([...sessions, ...newSessions]);
+
+    // Remove this subject from suggestions
+    setCatchUpSuggestions(prev => prev.filter(s => s.subjectId !== subjectId));
+  };
 
   // Subject CRUD
   const saveSubject = (subject: Subject) => {
@@ -519,6 +565,14 @@ function StudentApp() {
 
       {showShare && (
         <SharePage onClose={() => setShowShare(false)} />
+      )}
+
+      {catchUpSuggestions.length > 0 && (
+        <CatchUpModal
+          suggestions={catchUpSuggestions}
+          onAccept={handleAcceptCatchUp}
+          onDismiss={() => setCatchUpSuggestions([])}
+        />
       )}
 
       {timerSession && (

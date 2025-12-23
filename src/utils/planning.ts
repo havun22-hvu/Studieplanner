@@ -206,3 +206,73 @@ export function rescheduleMissedSessions(
 
   return { updated: updatedSessions, rescheduledCount: missedSessions.length };
 }
+
+// Calculate if student is behind schedule and suggest catch-up sessions
+export interface CatchUpSuggestion {
+  subjectId: string;
+  subjectName: string;
+  examDate: string;
+  minutesBehind: number;
+  suggestedDays: { date: string; minutes: number }[];
+}
+
+export function calculateCatchUpNeeded(
+  subjects: Subject[],
+  sessions: PlannedSession[],
+  settings: Settings
+): CatchUpSuggestion[] {
+  const suggestions: CatchUpSuggestion[] = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = today.toISOString().split('T')[0];
+
+  for (const subject of subjects) {
+    // Calculate total minutes needed for incomplete tasks
+    const incompleteTasks = subject.tasks.filter(t => !t.completed);
+    const totalMinutesNeeded = incompleteTasks.reduce((sum, t) => sum + t.estimatedMinutes, 0);
+
+    if (totalMinutesNeeded === 0) continue;
+
+    // Calculate minutes already planned (future sessions for this subject)
+    const plannedMinutes = sessions
+      .filter(s => s.subjectId === subject.id && !s.completed && s.date >= todayStr)
+      .reduce((sum, s) => sum + s.minutesPlanned, 0);
+
+    // Get available study days until exam (excluding break days)
+    const availableDays = getAvailableDays(subject.examDate, settings.breakDays);
+    const availableCapacity = availableDays.length * settings.dailyStudyMinutes;
+
+    // Calculate how much is behind
+    const minutesBehind = totalMinutesNeeded - plannedMinutes;
+
+    // If behind and not enough regular capacity, suggest catch-up
+    if (minutesBehind > 0 && minutesBehind > availableCapacity * 0.3) {
+      // Find break days that could be used for catch-up
+      const breakDaySuggestions: { date: string; minutes: number }[] = [];
+      const examDate = new Date(subject.examDate);
+
+      const current = new Date(today);
+      while (current < examDate && breakDaySuggestions.length < 3) {
+        if (settings.breakDays.includes(current.getDay())) {
+          breakDaySuggestions.push({
+            date: current.toISOString().split('T')[0],
+            minutes: Math.min(60, Math.ceil(minutesBehind / 3)), // Suggest 1 hour max per day
+          });
+        }
+        current.setDate(current.getDate() + 1);
+      }
+
+      if (breakDaySuggestions.length > 0) {
+        suggestions.push({
+          subjectId: subject.id,
+          subjectName: subject.name,
+          examDate: subject.examDate,
+          minutesBehind,
+          suggestedDays: breakDaySuggestions,
+        });
+      }
+    }
+  }
+
+  return suggestions;
+}

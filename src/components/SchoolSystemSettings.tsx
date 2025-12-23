@@ -379,6 +379,19 @@ export function SchoolSystemSettings({ onImportTests, onImportHomework }: Props)
       <p className="system-optional">
         Dit is optioneel - je kunt de app ook zonder koppeling gebruiken en zelf je vakken en taken invoeren.
       </p>
+
+      <div className="privacy-notice">
+        <h4>🔒 Privacy</h4>
+        <ul>
+          <li>Je wachtwoord wordt <strong>niet</strong> opgeslagen</li>
+          <li>We halen alleen toetsen en huiswerk op (alleen lezen)</li>
+          <li>Alle data blijft op jouw apparaat</li>
+          <li>Je kunt de koppeling altijd verwijderen</li>
+        </ul>
+        <p className="privacy-age">
+          Ben je jonger dan 16? Vraag dan toestemming aan je ouder/verzorger.
+        </p>
+      </div>
     </div>
   );
 }

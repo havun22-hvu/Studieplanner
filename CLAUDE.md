@@ -190,17 +190,27 @@ npm run build
 ## Status
 
 **Werkend:**
-- Volledige lokale app
+- Volledige lokale app met authenticatie
 - Vakken, taken, agenda, timer, resultaten
 - PWA installeerbaar
+- Backend API voor sessie tracking
+- Stats pagina met studiesnelheid analyse
+
+**Voltooid (december 2024):**
+- [x] Mentor view via deellink (read-only agenda)
+- [x] Task split dialog
+- [x] Laravel backend authenticatie (naam + 4-cijferige pincode)
+- [x] Sessie start/stop tracking naar database
+- [x] Timer loopt door op achtergrond (localStorage)
+- [x] 15-min check-in "Studeer je nog?"
+- [x] Geluid bij tijd voorbij
+- [x] Stats pagina met tempo analyse
+- [x] Blz/opdrachten tracking per sessie
 
 **TODO:**
-- [x] Mentor view via deellink (read-only agenda)
-- [x] Task split dialog (keuze bij taak > dagelijkse studietijd)
-- [ ] Laravel backend voor authenticatie
-- [ ] User login met email + pincode
-- [ ] Email verificatie (via HavunCore email systeem)
-- [ ] Mentor notificaties via backend
+- [ ] Dagelijkse evaluatie (eindtijd instellen)
+- [ ] Mentor live sessies zien
+- [ ] Email verificatie (optioneel, voor meerdere gebruikers)
 
 ---
 
@@ -231,9 +241,17 @@ POST /api/auth/reset      → pincode reset via email
 ## Authenticatie (ACTUEEL - december 2024)
 
 ### Huidige situatie (vereenvoudigd voor 1 gebruiker)
-- Login met **naam + 6-cijferige pincode**
+- Login met **naam + 4-cijferige pincode**
 - Geen email verificatie nodig
 - Backend: `D:\GitHub\Studieplanner-api` (Laravel 12)
+
+### Sessie Tracking API
+```
+POST /api/session/start   → start studiesessie (datum/tijd naar DB)
+POST /api/session/stop    → stop sessie (datum/tijd + resultaat)
+GET  /api/session/active  → actieve sessies (voor mentor)
+GET  /api/session/history → sessie geschiedenis
+```
 
 ### Starten
 ```bash

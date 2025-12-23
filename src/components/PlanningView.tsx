@@ -1,4 +1,4 @@
-import { Subject, PlannedSession } from '../types';
+import type { Subject, PlannedSession } from '../types';
 import { formatDate, formatMinutes } from '../utils/planning';
 
 interface Props {

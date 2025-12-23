@@ -1,4 +1,4 @@
-import { Subject, PlannedSession, Settings, StudyTask } from '../types';
+import type { Subject, PlannedSession, Settings, StudyTask } from '../types';
 
 // Generate unique ID
 export function generateId(): string {
@@ -98,6 +98,8 @@ export function autoPlanningSessions(
         taskId: task.id,
         subjectId: subject.id,
         minutesPlanned: toAllocate,
+        amountPlanned: task.plannedAmount,
+        unit: task.unit,
         completed: false,
       });
 

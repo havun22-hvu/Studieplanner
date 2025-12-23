@@ -1,0 +1,388 @@
+import { useState, useRef, useEffect, useCallback } from 'react';
+import type { Subject, PlannedSession, StudyTask } from '../types';
+
+interface Props {
+  subjects: Subject[];
+  sessions: PlannedSession[];
+  onUpdateSession: (sessionId: string, newDate: string, newHour: number | undefined) => void;
+  onCreateSession: (session: PlannedSession) => void;
+  onSessionClick: (session: PlannedSession) => void;
+  onToggleAlarm: (sessionId: string) => void;
+}
+
+// Time slots from 8:00 to 20:00
+const HOURS = Array.from({ length: 13 }, (_, i) => i + 8);
+const HOUR_HEIGHT = 60; // pixels per hour
+const PIXELS_PER_MINUTE = HOUR_HEIGHT / 60; // 1 pixel per minute
+
+interface DragItem {
+  type: 'session' | 'task';
+  session?: PlannedSession;
+  task?: StudyTask;
+  subject?: Subject;
+}
+
+export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSession: _onCreateSession, onSessionClick, onToggleAlarm }: Props) {
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
+    const today = new Date();
+    const day = today.getDay();
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+    const start = new Date(today);
+    start.setDate(diff);
+    return start;
+  });
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragItem, setDragItem] = useState<DragItem | null>(null);
+  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  // Get week days
+  const getWeekDays = (startDate: Date): Date[] => {
+    const days: Date[] = [];
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(startDate);
+      day.setDate(startDate.getDate() + i);
+      days.push(day);
+    }
+    return days;
+  };
+
+  const weekDays = getWeekDays(currentWeekStart);
+  const today = new Date().toISOString().split('T')[0];
+
+  const getSubject = (id: string) => subjects.find(s => s.id === id);
+  const getTask = (subjectId: string, taskId: string) => {
+    const subject = getSubject(subjectId);
+    return subject?.tasks.find(t => t.id === taskId);
+  };
+
+  const formatDay = (date: Date) => {
+    const days = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
+    return days[date.getDay()];
+  };
+
+  const formatDateNum = (date: Date) => date.getDate();
+
+  const formatMonth = (date: Date) => {
+    const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+    return months[date.getMonth()];
+  };
+
+  const prevWeek = () => {
+    const newStart = new Date(currentWeekStart);
+    newStart.setDate(newStart.getDate() - 7);
+    setCurrentWeekStart(newStart);
+  };
+
+  const nextWeek = () => {
+    const newStart = new Date(currentWeekStart);
+    newStart.setDate(newStart.getDate() + 7);
+    setCurrentWeekStart(newStart);
+  };
+
+  const goToToday = () => {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    const start = new Date(now);
+    start.setDate(diff);
+    setCurrentWeekStart(start);
+  };
+
+  const getSessionsForDate = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return sessions.filter(s => s.date === dateStr && s.hour !== undefined);
+  };
+
+  // Get unscheduled sessions (have date but no hour)
+  const getUnscheduledSessions = () => {
+    return sessions.filter(s => s.hour === undefined);
+  };
+
+  // Get exams for a specific date
+  const getExamsForDate = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return subjects.filter(s => s.examDate === dateStr);
+  };
+
+  // Drag start for session chips in agenda
+  const handleSessionDragStart = (e: React.MouseEvent | React.TouchEvent, session: PlannedSession) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+    setIsDragging(true);
+    setDragItem({ type: 'session', session });
+    setDragPosition({ x: clientX, y: clientY });
+  };
+
+  // Drag start for task chips in pool
+  const handleTaskDragStart = (e: React.MouseEvent | React.TouchEvent, session: PlannedSession, subject: Subject) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+    setIsDragging(true);
+    setDragItem({ type: 'session', session, subject });
+    setDragPosition({ x: clientX, y: clientY });
+  };
+
+  const handleDragMove = useCallback((e: MouseEvent | TouchEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+    setDragPosition({ x: clientX, y: clientY });
+  }, [isDragging]);
+
+  const handleDragEnd = useCallback((e: MouseEvent | TouchEvent) => {
+    if (!isDragging || !dragItem) {
+      setIsDragging(false);
+      setDragItem(null);
+      return;
+    }
+
+    const clientX = 'changedTouches' in e ? e.changedTouches[0].clientX : e.clientX;
+    const clientY = 'changedTouches' in e ? e.changedTouches[0].clientY : e.clientY;
+
+    // Check if dropped on task pool (the shelf)
+    const taskPool = document.querySelector('.task-pool');
+    if (taskPool) {
+      const poolRect = taskPool.getBoundingClientRect();
+      if (clientX >= poolRect.left && clientX <= poolRect.right &&
+          clientY >= poolRect.top && clientY <= poolRect.bottom) {
+        // Return to shelf - remove hour
+        if (dragItem.session) {
+          onUpdateSession(dragItem.session.id, dragItem.session.date, undefined);
+        }
+        setIsDragging(false);
+        setDragItem(null);
+        return;
+      }
+    }
+
+    // Find target day and hour
+    const dayColumns = document.querySelectorAll('.agenda-day-column');
+    let targetDate: string | null = null;
+    let targetHour = 9;
+
+    dayColumns.forEach((col) => {
+      const rect = col.getBoundingClientRect();
+      if (clientX >= rect.left && clientX <= rect.right) {
+        targetDate = col.getAttribute('data-date');
+
+        const hourSlots = col.querySelectorAll('.hour-slot');
+        hourSlots.forEach((slot) => {
+          const slotRect = slot.getBoundingClientRect();
+          if (clientY >= slotRect.top && clientY <= slotRect.bottom) {
+            targetHour = parseInt(slot.getAttribute('data-hour') || '9');
+          }
+        });
+      }
+    });
+
+    if (targetDate && dragItem.session) {
+      onUpdateSession(dragItem.session.id, targetDate, targetHour);
+    }
+
+    setIsDragging(false);
+    setDragItem(null);
+  }, [isDragging, dragItem, onUpdateSession]);
+
+  useEffect(() => {
+    if (isDragging) {
+      const moveHandler = (e: MouseEvent | TouchEvent) => handleDragMove(e);
+      const endHandler = (e: MouseEvent | TouchEvent) => handleDragEnd(e);
+
+      window.addEventListener('mousemove', moveHandler);
+      window.addEventListener('mouseup', endHandler);
+      window.addEventListener('touchmove', moveHandler, { passive: false });
+      window.addEventListener('touchend', endHandler);
+
+      return () => {
+        window.removeEventListener('mousemove', moveHandler);
+        window.removeEventListener('mouseup', endHandler);
+        window.removeEventListener('touchmove', moveHandler);
+        window.removeEventListener('touchend', endHandler);
+      };
+    }
+  }, [isDragging, handleDragMove, handleDragEnd]);
+
+  const unscheduledSessions = getUnscheduledSessions();
+
+  // Get drag item display info
+  const getDragSubject = () => {
+    if (!dragItem) return null;
+    if (dragItem.subject) return dragItem.subject;
+    if (dragItem.session) return getSubject(dragItem.session.subjectId);
+    return null;
+  };
+
+  const getDragTask = () => {
+    if (!dragItem?.session) return null;
+    return getTask(dragItem.session.subjectId, dragItem.session.taskId);
+  };
+
+  return (
+    <div className="agenda-view">
+      {/* Unscheduled sessions pool - always visible for drag back */}
+      <div className="task-pool">
+        <h3>Te plannen {unscheduledSessions.length > 0 && `(${unscheduledSessions.length})`}</h3>
+        <div className="task-chips">
+          {unscheduledSessions.length === 0 ? (
+            <span className="pool-empty">Sleep taken hierheen om te verwijderen uit agenda</span>
+          ) : (
+            unscheduledSessions.map((session) => {
+              const subject = getSubject(session.subjectId);
+              const task = getTask(session.subjectId, session.taskId);
+              if (!subject) return null;
+
+              return (
+                <div
+                  key={session.id}
+                  className="task-chip"
+                  style={{ backgroundColor: subject.color }}
+                  onMouseDown={(e) => handleTaskDragStart(e, session, subject)}
+                  onTouchStart={(e) => handleTaskDragStart(e, session, subject)}
+                >
+                  <span className="chip-name">{subject.name}</span>
+                  <span className="chip-task-name">{task?.description}</span>
+                  <span className="chip-time">{session.minutesPlanned}m</span>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Week header */}
+      <div className="agenda-header">
+        <button onClick={prevWeek} className="nav-btn">&lsaquo;</button>
+        <div className="week-info">
+          <span className="week-month">{formatMonth(weekDays[0])} {weekDays[0].getFullYear()}</span>
+          <button onClick={goToToday} className="today-btn">Vandaag</button>
+        </div>
+        <button onClick={nextWeek} className="nav-btn">&rsaquo;</button>
+      </div>
+
+      {/* Day headers */}
+      <div className="agenda-days-header">
+        <div className="time-gutter"></div>
+        {weekDays.map((day) => {
+          const dateStr = day.toISOString().split('T')[0];
+          const isToday = dateStr === today;
+          const exams = getExamsForDate(day);
+          return (
+            <div key={dateStr} className={`day-header-cell ${isToday ? 'today' : ''} ${exams.length > 0 ? 'has-exam' : ''}`}>
+              <span className="day-name">{formatDay(day)}</span>
+              <span className={`day-num ${isToday ? 'today-num' : ''}`}>{formatDateNum(day)}</span>
+              {exams.map(exam => (
+                <span key={exam.id} className="exam-badge" style={{ backgroundColor: exam.color }}>
+                  {exam.name}
+                </span>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Agenda grid */}
+      <div className="agenda-grid" ref={gridRef}>
+        {/* Time column */}
+        <div className="time-column">
+          {HOURS.map(hour => (
+            <div key={hour} className="time-slot">
+              <span>{hour}:00</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Day columns */}
+        {weekDays.map((day) => {
+          const dateStr = day.toISOString().split('T')[0];
+          const daySessions = getSessionsForDate(day);
+          const isToday = dateStr === today;
+
+          return (
+            <div
+              key={dateStr}
+              className={`agenda-day-column ${isToday ? 'today' : ''}`}
+              data-date={dateStr}
+            >
+              {/* Hour grid lines */}
+              {HOURS.map(hour => (
+                <div key={hour} className="hour-slot" data-hour={hour} />
+              ))}
+
+              {/* Session chips positioned absolutely */}
+              {daySessions.map(session => {
+                const subject = getSubject(session.subjectId);
+                const task = getTask(session.subjectId, session.taskId);
+                const height = Math.max(20, session.minutesPlanned * PIXELS_PER_MINUTE);
+                const showTask = height > 30;
+                const topOffset = ((session.hour || 8) - 8) * HOUR_HEIGHT;
+                const hasAlarm = session.alarm?.enabled;
+
+                return (
+                  <div
+                    key={session.id}
+                    className={`session-chip ${session.completed ? 'completed' : ''} ${isDragging && dragItem?.session?.id === session.id ? 'dragging' : ''}`}
+                    style={{
+                      backgroundColor: subject?.color,
+                      height: `${height}px`,
+                      top: `${topOffset}px`,
+                    }}
+                    onMouseDown={(e) => handleSessionDragStart(e, session)}
+                    onTouchStart={(e) => handleSessionDragStart(e, session)}
+                    onClick={(e) => {
+                      if (!isDragging) {
+                        e.stopPropagation();
+                        onSessionClick(session);
+                      }
+                    }}
+                  >
+                    <div className="chip-header">
+                      <span className="chip-subject">{subject?.name}</span>
+                      <button
+                        className={`alarm-btn ${hasAlarm ? 'active' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleAlarm(session.id);
+                        }}
+                      >
+                        {hasAlarm ? '🔔' : '🔕'}
+                      </button>
+                    </div>
+                    {showTask && <span className="chip-task">{task?.description}</span>}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Drag ghost */}
+      {isDragging && dragItem && (
+        <div
+          className="drag-ghost"
+          style={{
+            left: dragPosition.x - 40,
+            top: dragPosition.y - 15,
+            backgroundColor: getDragSubject()?.color || '#666',
+          }}
+        >
+          <span>{getDragSubject()?.name}</span>
+          <small>{getDragTask()?.description}</small>
+        </div>
+      )}
+    </div>
+  );
+}

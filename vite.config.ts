@@ -31,7 +31,30 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        // Force new SW to take over immediately
+        skipWaiting: true,
+        clientsClaim: true,
+        // Clean old caches on update
+        cleanupOutdatedCaches: true,
+        // Runtime caching for API calls (if needed later)
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*$/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'external-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 // 24 hours
+              }
+            }
+          }
+        ]
+      },
+      // Dev options for testing
+      devOptions: {
+        enabled: true
       }
     })
   ],

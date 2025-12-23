@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Settings as SettingsType, Subject, PlannedSession } from '../types';
 import { HelpSection } from './HelpSection';
-import { SOMtodaySettings } from './SOMtodaySettings';
+import { SchoolSystemSettings } from './SchoolSystemSettings';
 import { useAuth } from '../contexts/AuthContext';
 import { usePWA } from '../contexts/PWAContext';
 import { useNotifications } from '../hooks/useNotifications';
@@ -19,7 +19,7 @@ interface Props {
 }
 
 const DAYS = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
-const APP_VERSION = '1.7.0';
+const APP_VERSION = '1.8.0';
 
 export function Settings({ settings, subjects, sessions, onSave, onClose, onShowShare, onImportTests, onImportHomework }: Props) {
   const { user } = useAuth();
@@ -277,7 +277,7 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
         </div>
 
         <div className="settings-section">
-          <SOMtodaySettings
+          <SchoolSystemSettings
             onImportTests={onImportTests || (() => {})}
             onImportHomework={onImportHomework || (() => {})}
           />

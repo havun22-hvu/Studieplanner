@@ -307,6 +307,161 @@ body {
   cursor: pointer;
 }
 
+/* School System Settings */
+.school-system-settings {
+  padding: 0;
+}
+
+.school-system-settings h3 {
+  margin: 0 0 0.5rem 0;
+}
+
+.school-system-loading {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 1rem;
+}
+
+.system-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.system-option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.system-option:hover {
+  border-color: var(--primary);
+  background: var(--background);
+}
+
+.system-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+}
+
+.system-logo.somtoday {
+  background: linear-gradient(135deg, #00a0e3 0%, #0077b6 100%);
+}
+
+.system-logo.magister {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+.system-info {
+  flex: 1;
+}
+
+.system-info strong {
+  display: block;
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.system-info span {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.system-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.system-connected {
+  padding: 0;
+}
+
+.system-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.system-badge[data-system="somtoday"] {
+  background: rgba(0, 160, 227, 0.15);
+  color: #00a0e3;
+}
+
+.system-badge[data-system="magister"] {
+  background: rgba(99, 102, 241, 0.15);
+  color: #6366f1;
+}
+
+.system-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.system-status strong {
+  display: block;
+}
+
+.system-status p {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.system-status small {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.system-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.system-login {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.system-login label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.system-login input {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
 .app-nav {
   display: flex;
   background: var(--card);

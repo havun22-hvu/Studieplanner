@@ -2174,6 +2174,51 @@ body {
   color: var(--text-muted);
 }
 
+.stats-speed-summary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  color: white;
+}
+
+.stats-speed-summary h3 {
+  font-size: 0.9rem;
+  margin: 0 0 1rem 0;
+  opacity: 0.9;
+}
+
+.speed-cards {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.speed-card {
+  background: rgba(255,255,255,0.2);
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.speed-value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.speed-unit {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.speed-hint {
+  font-size: 0.75rem;
+  text-align: center;
+  margin: 1rem 0 0 0;
+  opacity: 0.8;
+}
+
 .stats-subjects {
   display: flex;
   flex-direction: column;

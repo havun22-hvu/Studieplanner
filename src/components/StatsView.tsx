@@ -93,6 +93,14 @@ export function StatsView({ subjects, sessions }: Props) {
     { minutesPlanned: 0, minutesActual: 0, blzPlanned: 0, blzActual: 0, opdrPlanned: 0, opdrActual: 0, sessionsCompleted: 0, sessionsTotal: 0 }
   );
 
+  // Calculate overall average speeds
+  const avgBlzPerHour = totals.minutesActual > 0 && totals.blzActual > 0
+    ? Math.round((totals.blzActual / totals.minutesActual) * 60)
+    : 0;
+  const avgOpdrPerHour = totals.minutesActual > 0 && totals.opdrActual > 0
+    ? Math.round((totals.opdrActual / totals.minutesActual) * 60 * 10) / 10
+    : 0;
+
   const formatTime = (minutes: number) => {
     const hrs = Math.floor(minutes / 60);
     const mins = minutes % 60;
@@ -175,6 +183,28 @@ export function StatsView({ subjects, sessions }: Props) {
           <span className="summary-label">sessies af</span>
         </div>
       </div>
+
+      {/* Gemiddelde snelheden */}
+      {(avgBlzPerHour > 0 || avgOpdrPerHour > 0) && (
+        <div className="stats-speed-summary">
+          <h3>Jouw gemiddelde studiesnelheid</h3>
+          <div className="speed-cards">
+            {avgBlzPerHour > 0 && (
+              <div className="speed-card">
+                <span className="speed-value">{avgBlzPerHour}</span>
+                <span className="speed-unit">blz/uur</span>
+              </div>
+            )}
+            {avgOpdrPerHour > 0 && (
+              <div className="speed-card">
+                <span className="speed-value">{avgOpdrPerHour}</span>
+                <span className="speed-unit">opdr/uur</span>
+              </div>
+            )}
+          </div>
+          <p className="speed-hint">Deze snelheden worden gebruikt voor slimmere planning</p>
+        </div>
+      )}
 
       {/* Per vak */}
       {stats.length === 0 ? (

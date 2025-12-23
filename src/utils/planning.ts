@@ -126,3 +126,83 @@ export function formatDate(dateString: string): string {
   const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
   return `${days[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]}`;
 }
+
+// Reschedule missed sessions to today or next available day
+export function rescheduleMissedSessions(
+  sessions: PlannedSession[],
+  subjects: Subject[],
+  settings: Settings
+): { updated: PlannedSession[]; rescheduledCount: number } {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = today.toISOString().split('T')[0];
+
+  // Find missed sessions (past date, not completed, was scheduled on agenda)
+  const missedSessions = sessions.filter(s => {
+    if (s.completed) return false;
+    if (s.hour === undefined) return false; // On the shelf, not scheduled
+    const sessionDate = new Date(s.date);
+    sessionDate.setHours(0, 0, 0, 0);
+    return sessionDate < today;
+  });
+
+  if (missedSessions.length === 0) {
+    return { updated: sessions, rescheduledCount: 0 };
+  }
+
+  // Get minutes already planned per day (only for today and future)
+  const dayMinutes: Record<string, number> = {};
+  sessions.forEach(s => {
+    if (s.date >= todayStr && !missedSessions.includes(s)) {
+      dayMinutes[s.date] = (dayMinutes[s.date] || 0) + s.minutesPlanned;
+    }
+  });
+
+  // Get available days for next 30 days
+  const availableDays: string[] = [];
+  const endDate = new Date(today);
+  endDate.setDate(endDate.getDate() + 30);
+
+  const current = new Date(today);
+  while (current <= endDate) {
+    if (!settings.breakDays.includes(current.getDay())) {
+      availableDays.push(current.toISOString().split('T')[0]);
+    }
+    current.setDate(current.getDate() + 1);
+  }
+
+  // Reschedule each missed session
+  const updatedSessions = sessions.map(session => {
+    if (!missedSessions.includes(session)) return session;
+
+    // Find subject to check exam date
+    const subject = subjects.find(s => s.id === session.subjectId);
+    const examDate = subject?.examDate || endDate.toISOString().split('T')[0];
+
+    // Find first available day with enough space
+    for (const day of availableDays) {
+      if (day > examDate) break; // Don't schedule after exam
+
+      const used = dayMinutes[day] || 0;
+      const available = settings.dailyStudyMinutes - used;
+
+      if (available >= session.minutesPlanned) {
+        dayMinutes[day] = used + session.minutesPlanned;
+        return {
+          ...session,
+          date: day,
+          hour: undefined, // Put on shelf, user can reschedule to specific time
+        };
+      }
+    }
+
+    // If no day with full space, put on today's shelf anyway
+    return {
+      ...session,
+      date: todayStr,
+      hour: undefined,
+    };
+  });
+
+  return { updated: updatedSessions, rescheduledCount: missedSessions.length };
+}

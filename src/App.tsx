@@ -13,7 +13,7 @@ import { MentorView } from './components/MentorView';
 import { MentorDashboard } from './components/MentorDashboard';
 import { StatsView } from './components/StatsView';
 import { SharePage } from './components/SharePage';
-import { autoPlanningSessions, generateId } from './utils/planning';
+import { autoPlanningSessions, generateId, rescheduleMissedSessions } from './utils/planning';
 import { AuthScreen } from './components/AuthScreen';
 import { useAuth } from './contexts/AuthContext';
 import './App.css';
@@ -167,7 +167,35 @@ function StudentApp() {
     return () => clearInterval(interval);
   }, [sessions, subjects]);
 
-  // Subject CRUD
+  // Reschedule missed sessions on app load
+  const [rescheduledNotice, setRescheduledNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    const lastCheck = localStorage.getItem('studieplanner-last-reschedule');
+    const today = new Date().toISOString().split('T')[0];
+
+    // Only check once per day
+    if (lastCheck === today) return;
+
+    const { updated, rescheduledCount } = rescheduleMissedSessions(sessions, subjects, settings);
+
+    if (rescheduledCount > 0) {
+      setSessions(updated);
+      localStorage.setItem('studieplanner-last-reschedule', today);
+      setRescheduledNotice(
+        rescheduledCount === 1
+          ? '1 gemiste sessie is doorgeschoven naar vandaag'
+          : `${rescheduledCount} gemiste sessies zijn doorgeschoven`
+      );
+
+      // Auto-hide after 5 seconds
+      setTimeout(() => setRescheduledNotice(null), 5000);
+    } else {
+      localStorage.setItem('studieplanner-last-reschedule', today);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
+
   // Subject CRUD
   const saveSubject = (subject: Subject) => {
     // Waarschuwing bij taken > 90 minuten
@@ -381,6 +409,12 @@ function StudentApp() {
         <h1>StudiePlanner</h1>
         <button onClick={() => setShowSettings(true)} className="btn-icon">⚙️</button>
       </header>
+
+      {rescheduledNotice && (
+        <div className="reschedule-notice" onClick={() => setRescheduledNotice(null)}>
+          📅 {rescheduledNotice}
+        </div>
+      )}
 
       <nav className="app-nav">
         <button

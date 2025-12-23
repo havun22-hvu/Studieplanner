@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Settings as SettingsType, Subject, PlannedSession } from '../types';
-import { SchoolSystemSettings } from './SchoolSystemSettings';
+// import { SchoolSystemSettings } from './SchoolSystemSettings'; // Tijdelijk uitgeschakeld
 import { useAuth } from '../contexts/AuthContext';
 import { usePWA } from '../contexts/PWAContext';
 import { useNotifications } from '../hooks/useNotifications';
@@ -19,7 +19,10 @@ interface Props {
 
 const DAYS = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
 
-export function Settings({ settings, subjects, sessions, onSave, onClose, onShowShare, onImportTests, onImportHomework }: Props) {
+export function Settings({ settings, subjects, sessions, onSave, onClose, onShowShare, onImportTests: _onImportTests, onImportHomework: _onImportHomework }: Props) {
+  // Tijdelijk unused - voor wanneer SchoolSystemSettings weer actief wordt
+  void _onImportTests;
+  void _onImportHomework;
   const { user } = useAuth();
   const { canInstall, isInstalled, install, checkForUpdate, lastUpdateCheck } = usePWA();
   const { permission, requestPermission, isSupported } = useNotifications(settings);
@@ -274,11 +277,19 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
           )}
         </div>
 
+        {/* Schoolsysteem koppeling tijdelijk uitgeschakeld - API niet beschikbaar
         <div className="settings-section">
           <SchoolSystemSettings
             onImportTests={onImportTests || (() => {})}
             onImportHomework={onImportHomework || (() => {})}
           />
+        </div>
+        */}
+        <div className="settings-section">
+          <h3>📚 Schoolsysteem Koppeling</h3>
+          <p className="section-info coming-soon">
+            Binnenkort: koppel SOMtoday of Magister om toetsen automatisch te importeren.
+          </p>
         </div>
 
         <div className="settings-section">

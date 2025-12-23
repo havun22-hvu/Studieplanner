@@ -117,24 +117,30 @@ study_sessions: id, student_id, mentor_id, started_at, stopped_at, status
 ### Belangrijke Files
 ```
 src/
-├── App.tsx              # Hoofd component, state management
+├── App.tsx              # Hoofd component, state management, routing
 ├── App.css              # Alle styling
 ├── types/index.ts       # TypeScript types
 ├── utils/planning.ts    # Planning algoritme
 ├── hooks/useLocalStorage.ts
+├── contexts/
+│   └── AuthContext.tsx  # Auth state, login/register/logout
+├── services/
+│   └── api.ts           # API calls naar Laravel backend
 ├── components/
 │   ├── AgendaView.tsx   # Week agenda met drag & drop
+│   ├── AuthScreen.tsx   # Login/registratie (student + mentor)
+│   ├── MentorDashboard.tsx  # Mentor dashboard met student-switcher
+│   ├── StatsView.tsx    # Statistieken (blz/uur, opdrachten/uur)
 │   ├── SubjectForm.tsx  # Vak toevoegen/bewerken
 │   ├── SubjectCard.tsx  # Vak kaart met sessie-voortgang
 │   ├── StudyTimer.tsx   # Timer modal
 │   ├── SessionResultModal.tsx  # Resultaat invoer
 │   ├── Settings.tsx     # Instellingen + deellink
-│   ├── MentorView.tsx   # Read-only agenda voor mentoren
+│   ├── SharePage.tsx    # QR code om app te delen
+│   ├── HelpSection.tsx  # FAQ accordion in instellingen
 │   ├── TaskSplitDialog.tsx    # Keuze bij taak > dagelijkse tijd
 │   ├── InstallPrompt.tsx      # PWA installatie prompt
 │   └── UpdatePrompt.tsx       # PWA update prompt
-└── lib/
-    └── (firebase.ts)    # VERWIJDERD - was Firebase poging
 ```
 
 ### Data Types
@@ -206,10 +212,14 @@ npm run build
 - [x] Geluid bij tijd voorbij
 - [x] Stats pagina met tempo analyse
 - [x] Blz/opdrachten tracking per sessie
+- [x] Mentor dashboard met multi-student support
+- [x] Mentor kan meerdere leerlingen volgen
+- [x] Uitnodigingscode systeem voor mentor-leerling koppeling
+- [x] UUID-based student_code voor veilige URLs
 
 **TODO:**
 - [ ] Dagelijkse evaluatie (eindtijd instellen)
-- [ ] Mentor live sessies zien
+- [ ] Mentor live sessies zien (real-time updates)
 - [ ] Email verificatie (optioneel, voor meerdere gebruikers)
 
 ---
@@ -251,6 +261,24 @@ POST /api/session/start   → start studiesessie (datum/tijd naar DB)
 POST /api/session/stop    → stop sessie (datum/tijd + resultaat)
 GET  /api/session/active  → actieve sessies (voor mentor)
 GET  /api/session/history → sessie geschiedenis
+```
+
+### Mentor API Endpoints
+```
+GET  /api/mentor/students           → lijst van gekoppelde leerlingen
+GET  /api/mentor/student/{id}/data  → volledige data van leerling (subjects, tasks, sessions)
+POST /api/mentor/invite             → genereer uitnodigingscode (24u geldig)
+POST /api/mentor/accept-invite      → leerling accepteert invite (via code)
+DELETE /api/mentor/student/{id}     → ontkoppel leerling
+```
+
+### Database Tabellen
+```sql
+users: id, name, pincode, role (student/mentor), student_code (UUID 12 chars)
+mentor_students: mentor_id, student_id (pivot tabel)
+subjects: id, user_id, name, color, exam_date
+tasks: id, subject_id, description, estimated_minutes, amount_type, amount_total
+planned_sessions: id, task_id, date, hour, minutes_planned, completed, amount_actual, minutes_actual
 ```
 
 ### Starten

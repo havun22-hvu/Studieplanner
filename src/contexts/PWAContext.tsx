@@ -28,11 +28,19 @@ export function PWAProvider({ children }: { children: ReactNode }) {
     needRefresh: [needsUpdate],
     updateServiceWorker,
   } = useRegisterSW({
+    // Force immediate update on registration
+    immediate: true,
     onRegisteredSW(_swUrl, r) {
       if (r) {
         setSwRegistration(r);
-        // Check for updates every hour
-        setInterval(() => r.update(), 60 * 60 * 1000);
+        // Check for updates immediately on load
+        r.update();
+        setLastUpdateCheck(new Date());
+        // Then check every 5 minutes
+        setInterval(() => {
+          r.update();
+          setLastUpdateCheck(new Date());
+        }, 5 * 60 * 1000);
       }
     },
     onRegisterError(error) {
@@ -40,16 +48,40 @@ export function PWAProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  // Auto-update: apply update immediately when available
+  // Auto-update: apply update IMMEDIATELY when available (no delay)
   useEffect(() => {
     if (needsUpdate) {
-      // Show brief notification then update
-      console.log('Update available, applying...');
-      setTimeout(() => {
-        updateServiceWorker(true);
-      }, 1000);
+      console.log('Update available, applying immediately...');
+      updateServiceWorker(true);
     }
   }, [needsUpdate, updateServiceWorker]);
+
+  // Check for updates when app gets focus (user opens/switches to app)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && swRegistration) {
+        console.log('App visible, checking for updates...');
+        swRegistration.update();
+        setLastUpdateCheck(new Date());
+      }
+    };
+
+    const handleFocus = () => {
+      if (swRegistration) {
+        console.log('App focused, checking for updates...');
+        swRegistration.update();
+        setLastUpdateCheck(new Date());
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [swRegistration]);
 
   // Check if already installed
   useEffect(() => {

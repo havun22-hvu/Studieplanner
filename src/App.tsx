@@ -54,7 +54,7 @@ function App() {
 
 // Mentor view route component
 function MentorRoute() {
-  const { studentCode } = useParams();
+  useParams(); // studentCode from URL (for future API use)
   const [searchParams] = useSearchParams();
   const shareCode = searchParams.get('code');
 

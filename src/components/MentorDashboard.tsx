@@ -23,7 +23,9 @@ export function MentorDashboard() {
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [studentData, setStudentData] = useState<StudentData | null>(null);
-  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [studentCode, setStudentCode] = useState('');
+  const [codeError, setCodeError] = useState('');
+  const [codeSuccess, setCodeSuccess] = useState('');
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'agenda' | 'stats'>('agenda');
 
@@ -80,19 +82,23 @@ export function MentorDashboard() {
     }
   };
 
-  const generateInvite = async () => {
-    try {
-      const result = await api.generateMentorInvite();
-      setInviteCode(result.invite_code);
-    } catch (err) {
-      console.error('Failed to generate invite:', err);
+  const handleAcceptStudent = async () => {
+    if (!studentCode.trim()) {
+      setCodeError('Voer een code in');
+      return;
     }
-  };
 
-  const copyInviteCode = () => {
-    if (inviteCode) {
-      navigator.clipboard.writeText(inviteCode);
-      alert('Code gekopieerd!');
+    setCodeError('');
+    setCodeSuccess('');
+
+    try {
+      const result = await api.acceptStudentInvite(studentCode.trim());
+      setCodeSuccess(`${result.student.name} toegevoegd!`);
+      setStudentCode('');
+      loadStudents();
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setCodeError(error.message || 'Ongeldige of verlopen code');
     }
   };
 
@@ -158,22 +164,21 @@ export function MentorDashboard() {
 
           <div className="sidebar-section">
             <h3>Leerling Toevoegen</h3>
-            {inviteCode ? (
-              <div className="invite-code-box">
-                <p>Deel deze code met de leerling:</p>
-                <div className="invite-code">{inviteCode}</div>
-                <button onClick={copyInviteCode} className="btn-copy-code">
-                  Kopieer
-                </button>
-                <button onClick={() => setInviteCode(null)} className="btn-new-code">
-                  Nieuwe code
-                </button>
-              </div>
-            ) : (
-              <button onClick={generateInvite} className="btn-generate-invite">
-                Genereer uitnodigingscode
+            <p className="section-hint">Vraag de leerling om een code te genereren.</p>
+            <div className="student-code-input">
+              <input
+                type="text"
+                value={studentCode}
+                onChange={e => setStudentCode(e.target.value.toUpperCase())}
+                placeholder="Voer code in"
+                maxLength={10}
+              />
+              <button onClick={handleAcceptStudent} className="btn-add-student">
+                Toevoegen
               </button>
-            )}
+            </div>
+            {codeError && <p className="error-message">{codeError}</p>}
+            {codeSuccess && <p className="success-message">{codeSuccess}</p>}
           </div>
         </aside>
 

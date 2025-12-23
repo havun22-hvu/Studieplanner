@@ -122,15 +122,22 @@ class ApiService {
   }
 
   // Student mentor endpoints
-  async acceptMentorInvite(inviteCode: string) {
-    return this.request<{ message: string; mentor: { id: number; name: string } }>('/student/accept-mentor', {
+  async generateStudentInvite() {
+    return this.request<{ invite_code: string; message: string }>('/student/invite', {
       method: 'POST',
-      body: JSON.stringify({ invite_code: inviteCode }),
     });
   }
 
   async getStudentMentors() {
     return this.request<Array<{ id: number; name: string }>>('/student/mentors');
+  }
+
+  // Mentor accepts student invite
+  async acceptStudentInvite(inviteCode: string) {
+    return this.request<{ message: string; student: { id: number; name: string } }>('/mentor/accept-student', {
+      method: 'POST',
+      body: JSON.stringify({ invite_code: inviteCode }),
+    });
   }
 
   // Study sessions

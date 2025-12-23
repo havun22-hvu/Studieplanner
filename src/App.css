@@ -1855,6 +1855,32 @@ body {
   letter-spacing: 0.1em;
 }
 
+.invite-code-box {
+  background: var(--bg);
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.invite-code-box p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem 0;
+}
+
+.invite-code {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: monospace;
+  color: var(--primary);
+  letter-spacing: 2px;
+  margin-bottom: 0.75rem;
+}
+
+.invite-code-box button {
+  margin: 0.25rem;
+}
+
 .mentor-list {
   margin-top: 1rem;
   padding: 0.75rem;

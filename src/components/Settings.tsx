@@ -15,16 +15,15 @@ interface Props {
 }
 
 const DAYS = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 
 export function Settings({ settings, subjects, sessions, onSave, onClose, onShowShare }: Props) {
   const { user } = useAuth();
   const { canInstall, isInstalled, install, checkForUpdate, lastUpdateCheck } = usePWA();
 
   const [copied, setCopied] = useState(false);
-  const [mentorCode, setMentorCode] = useState('');
-  const [mentorError, setMentorError] = useState('');
-  const [mentorSuccess, setMentorSuccess] = useState('');
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [inviteCopied, setInviteCopied] = useState(false);
   const [mentors, setMentors] = useState<Array<{ id: number; name: string }>>([]);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
 
@@ -42,23 +41,20 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
     }
   };
 
-  const handleAcceptMentor = async () => {
-    if (!mentorCode.trim()) {
-      setMentorError('Voer een code in');
-      return;
-    }
-
-    setMentorError('');
-    setMentorSuccess('');
-
+  const generateInvite = async () => {
     try {
-      const result = await api.acceptMentorInvite(mentorCode.trim());
-      setMentorSuccess(`Gekoppeld aan ${result.mentor.name}!`);
-      setMentorCode('');
-      loadMentors();
-    } catch (err: unknown) {
-      const error = err as { message?: string };
-      setMentorError(error.message || 'Ongeldige of verlopen code');
+      const result = await api.generateStudentInvite();
+      setInviteCode(result.invite_code);
+    } catch (err) {
+      console.error('Failed to generate invite:', err);
+    }
+  };
+
+  const copyInviteCode = () => {
+    if (inviteCode) {
+      navigator.clipboard.writeText(inviteCode);
+      setInviteCopied(true);
+      setTimeout(() => setInviteCopied(false), 2000);
     }
   };
 
@@ -185,24 +181,25 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
         <div className="settings-section">
           <h3>Mentor koppelen</h3>
           <p className="section-info">
-            Vraag je mentor om een code en voer deze hieronder in.
+            Genereer een code en deel deze met je mentor.
           </p>
 
-          <div className="mentor-code-input">
-            <input
-              type="text"
-              value={mentorCode}
-              onChange={e => setMentorCode(e.target.value.toUpperCase())}
-              placeholder="Voer mentor code in"
-              maxLength={10}
-            />
-            <button onClick={handleAcceptMentor} className="btn-primary">
-              Koppelen
+          {inviteCode ? (
+            <div className="invite-code-box">
+              <p>Deel deze code met je mentor:</p>
+              <div className="invite-code">{inviteCode}</div>
+              <button onClick={copyInviteCode} className="btn-copy">
+                {inviteCopied ? 'Gekopieerd!' : 'Kopieer'}
+              </button>
+              <button onClick={() => setInviteCode(null)} className="btn-secondary">
+                Nieuwe code
+              </button>
+            </div>
+          ) : (
+            <button onClick={generateInvite} className="btn-primary">
+              Genereer code voor mentor
             </button>
-          </div>
-
-          {mentorError && <p className="error-message">{mentorError}</p>}
-          {mentorSuccess && <p className="success-message">{mentorSuccess}</p>}
+          )}
 
           {mentors.length > 0 && (
             <div className="mentor-list">

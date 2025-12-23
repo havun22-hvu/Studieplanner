@@ -371,6 +371,10 @@ export function SchoolSystemSettings({ onImportTests, onImportHomework }: Props)
       <p className="system-hint">
         💡 Weet je niet welk systeem je school gebruikt? Vraag het aan je docent of kijk op de website van je school.
       </p>
+
+      <p className="system-optional">
+        Dit is optioneel - je kunt de app ook zonder koppeling gebruiken en zelf je vakken en taken invoeren.
+      </p>
     </div>
   );
 }

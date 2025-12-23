@@ -62,6 +62,7 @@ export function MentorDashboard() {
           tasks: s.tasks.map(t => ({
             ...t,
             id: String(t.id),
+            subjectId: String(s.id),
           })),
         })),
         sessions: data.sessions.map(s => ({
@@ -69,6 +70,9 @@ export function MentorDashboard() {
           id: String(s.id),
           taskId: String(s.taskId),
           subjectId: String(s.subjectId),
+          minutesActual: s.minutesActual ?? undefined,
+          amountActual: s.amountActual ?? undefined,
+          hour: s.hour ?? undefined,
         })),
       });
     } catch (err) {

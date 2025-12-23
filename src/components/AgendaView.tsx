@@ -24,6 +24,7 @@ interface DragItem {
 }
 
 export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSession: _onCreateSession, onSessionClick, onToggleAlarm, readOnly = false }: Props) {
+  // Skip drag functionality in readOnly mode (mentor view)
   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
     const today = new Date();
     const day = today.getDay();
@@ -250,8 +251,8 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
                   key={session.id}
                   className="task-chip"
                   style={{ backgroundColor: subject.color }}
-                  onMouseDown={(e) => handleTaskDragStart(e, session, subject)}
-                  onTouchStart={(e) => handleTaskDragStart(e, session, subject)}
+                  onMouseDown={(e) => !readOnly && handleTaskDragStart(e, session, subject)}
+                  onTouchStart={(e) => !readOnly && handleTaskDragStart(e, session, subject)}
                 >
                   <span className="chip-name">{subject.name}</span>
                   <span className="chip-task-name">{task?.description}</span>
@@ -340,10 +341,10 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
                       height: `${height}px`,
                       top: `${topOffset}px`,
                     }}
-                    onMouseDown={(e) => handleSessionDragStart(e, session)}
-                    onTouchStart={(e) => handleSessionDragStart(e, session)}
+                    onMouseDown={(e) => !readOnly && handleSessionDragStart(e, session)}
+                    onTouchStart={(e) => !readOnly && handleSessionDragStart(e, session)}
                     onClick={(e) => {
-                      if (!isDragging) {
+                      if (!isDragging && !readOnly) {
                         e.stopPropagation();
                         onSessionClick(session);
                       }
@@ -351,15 +352,17 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
                   >
                     <div className="chip-header">
                       <span className="chip-subject">{subject?.name}</span>
-                      <button
-                        className={`alarm-btn ${hasAlarm ? 'active' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleAlarm(session.id);
-                        }}
-                      >
-                        {hasAlarm ? '🔔' : '🔕'}
-                      </button>
+                      {!readOnly && (
+                        <button
+                          className={`alarm-btn ${hasAlarm ? 'active' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleAlarm(session.id);
+                          }}
+                        >
+                          {hasAlarm ? '🔔' : '🔕'}
+                        </button>
+                      )}
                     </div>
                     {showTask && <span className="chip-task">{task?.description}</span>}
                   </div>

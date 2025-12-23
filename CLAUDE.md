@@ -216,11 +216,20 @@ npm run build
 - [x] Mentor kan meerdere leerlingen volgen
 - [x] Uitnodigingscode systeem voor mentor-leerling koppeling
 - [x] UUID-based student_code voor veilige URLs
+- [x] Settings modal scroll fix (mobiel)
+- [x] Help en About naar aparte modals (dropdown menu bij ⚙️)
+- [x] Havun © copyright in About modal
+
+**Uitgeschakeld (wacht op werkende API):**
+- [ ] SOMtoday integratie (code aanwezig in SchoolSystemSettings.tsx)
+- [ ] Magister integratie (code aanwezig in services/magister.ts)
+- [ ] Privacy notice voor schoolsysteem koppeling (AVG-compliant, klaar voor gebruik)
 
 **TODO:**
 - [ ] Dagelijkse evaluatie (eindtijd instellen)
 - [ ] Mentor live sessies zien (real-time updates)
 - [ ] Email verificatie (optioneel, voor meerdere gebruikers)
+- [ ] SOMtoday/Magister activeren wanneer API beschikbaar is
 
 ---
 

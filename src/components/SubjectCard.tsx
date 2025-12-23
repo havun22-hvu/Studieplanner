@@ -1,5 +1,7 @@
-import type { Subject, PlannedSession } from '../types';
-import { getDaysUntil, getTotalMinutes, getRemainingMinutes, formatMinutes, formatDate } from '../utils/planning';
+import { useState } from 'react';
+import type { Subject, PlannedSession, StudyTask } from '../types';
+import { TASK_UNITS } from '../types';
+import { getDaysUntil, getTotalMinutes, getRemainingMinutes, formatMinutes, formatDate, generateId } from '../utils/planning';
 
 interface Props {
   subject: Subject;
@@ -7,9 +9,16 @@ interface Props {
   onEdit: (subject: Subject) => void;
   onDelete: (id: string) => void;
   onToggleTask: (subjectId: string, taskId: string) => void;
+  onAddTask: (subjectId: string, task: StudyTask) => void;
 }
 
-export function SubjectCard({ subject, sessions, onEdit, onDelete, onToggleTask }: Props) {
+export function SubjectCard({ subject, sessions, onEdit, onDelete, onToggleTask, onAddTask }: Props) {
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [taskDesc, setTaskDesc] = useState('');
+  const [taskAmount, setTaskAmount] = useState('');
+  const [taskUnit, setTaskUnit] = useState<string>(TASK_UNITS[0]);
+  const [taskMinutes, setTaskMinutes] = useState('');
+
   const daysLeft = getDaysUntil(subject.examDate);
   const totalMin = getTotalMinutes(subject);
   const remainingMin = getRemainingMinutes(subject);
@@ -22,6 +31,35 @@ export function SubjectCard({ subject, sessions, onEdit, onDelete, onToggleTask 
     const taskSessions = sessions.filter(s => s.taskId === taskId);
     const completed = taskSessions.filter(s => s.completed).length;
     return { total: taskSessions.length, completed };
+  };
+
+  const handleAddTask = () => {
+    if (!taskDesc || !taskAmount || !taskMinutes) return;
+
+    const newTask: StudyTask = {
+      id: generateId(),
+      subjectId: subject.id,
+      description: taskDesc,
+      plannedAmount: parseInt(taskAmount),
+      unit: taskUnit,
+      estimatedMinutes: parseInt(taskMinutes),
+      completed: false,
+    };
+
+    onAddTask(subject.id, newTask);
+
+    // Reset form
+    setTaskDesc('');
+    setTaskAmount('');
+    setTaskMinutes('');
+    // Keep form open for adding more tasks
+  };
+
+  const handleCloseForm = () => {
+    setShowAddTask(false);
+    setTaskDesc('');
+    setTaskAmount('');
+    setTaskMinutes('');
   };
 
   return (
@@ -48,8 +86,63 @@ export function SubjectCard({ subject, sessions, onEdit, onDelete, onToggleTask 
 
       <div className="task-list-header">
         <span>Studietaken</span>
-        <span className="task-list-hint">Vink af als je klaar bent (ook zonder timer)</span>
+        <button
+          className="btn-add-inline"
+          onClick={() => setShowAddTask(!showAddTask)}
+          title="Taak toevoegen"
+        >
+          {showAddTask ? '−' : '+'}
+        </button>
       </div>
+
+      {showAddTask && (
+        <div className="quick-task-form">
+          <input
+            type="text"
+            value={taskDesc}
+            onChange={e => setTaskDesc(e.target.value)}
+            placeholder="Taak (bijv. H3, Par. 2.1)"
+            className="quick-task-desc"
+            autoFocus
+          />
+          <div className="quick-task-row">
+            <input
+              type="number"
+              value={taskAmount}
+              onChange={e => setTaskAmount(e.target.value)}
+              placeholder="Aantal"
+              min="1"
+              className="quick-task-amount"
+            />
+            <select
+              value={taskUnit}
+              onChange={e => setTaskUnit(e.target.value)}
+              className="quick-task-unit"
+            >
+              {TASK_UNITS.map(unit => (
+                <option key={unit} value={unit}>{unit}</option>
+              ))}
+            </select>
+            <input
+              type="number"
+              value={taskMinutes}
+              onChange={e => setTaskMinutes(e.target.value)}
+              placeholder="Min"
+              min="1"
+              className="quick-task-time"
+            />
+            <button
+              type="button"
+              onClick={handleAddTask}
+              className="btn-quick-add"
+              disabled={!taskDesc || !taskAmount || !taskMinutes}
+            >
+              +
+            </button>
+          </div>
+          <button onClick={handleCloseForm} className="btn-close-form">Klaar</button>
+        </div>
+      )}
 
       <ul className="task-checklist">
         {subject.tasks.map(task => {
@@ -65,10 +158,11 @@ export function SubjectCard({ subject, sessions, onEdit, onDelete, onToggleTask 
                 <div className="task-info">
                   <span className="task-description">{task.description}</span>
                   <div className="task-meta">
+                    <small className="task-amount-info">{task.plannedAmount} {task.unit}</small>
                     <small className="task-time">{formatMinutes(task.estimatedMinutes)}</small>
                     {sessionStats.total > 0 && (
                       <small className="task-sessions">
-                        {sessionStats.completed}/{sessionStats.total} sessies gedaan
+                        {sessionStats.completed}/{sessionStats.total} sessies
                       </small>
                     )}
                   </div>
@@ -78,6 +172,10 @@ export function SubjectCard({ subject, sessions, onEdit, onDelete, onToggleTask 
           );
         })}
       </ul>
+
+      {subject.tasks.length === 0 && (
+        <p className="no-tasks-hint">Nog geen taken. Klik + om taken toe te voegen.</p>
+      )}
     </div>
   );
 }

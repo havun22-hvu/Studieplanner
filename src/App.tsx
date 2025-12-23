@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import type { Subject, PlannedSession, Settings as SettingsType } from './types';
+import type { Subject, PlannedSession, Settings as SettingsType, StudyTask } from './types';
 import { SubjectForm } from './components/SubjectForm';
 import { SubjectCard } from './components/SubjectCard';
 import { AgendaView } from './components/AgendaView';
@@ -14,8 +14,6 @@ import { MentorDashboard } from './components/MentorDashboard';
 import { StatsView } from './components/StatsView';
 import { SharePage } from './components/SharePage';
 import { autoPlanningSessions, generateId } from './utils/planning';
-import { InstallPrompt } from './components/InstallPrompt';
-import { UpdatePrompt } from './components/UpdatePrompt';
 import { AuthScreen } from './components/AuthScreen';
 import { useAuth } from './contexts/AuthContext';
 import './App.css';
@@ -247,6 +245,19 @@ function StudentApp() {
     }));
   };
 
+  // Add task to existing subject
+  const addTaskToSubject = (subjectId: string, task: StudyTask) => {
+    setSubjects(subjects.map(subject => {
+      if (subject.id !== subjectId) return subject;
+      return {
+        ...subject,
+        tasks: [...subject.tasks, task],
+      };
+    }));
+    // Regenerate planning to include new task
+    regeneratePlanning();
+  };
+
   // Update session date and hour (for drag & drop)
   const updateSession = (sessionId: string, newDate: string, newHour: number | undefined) => {
     setSessions(sessions.map(session =>
@@ -366,8 +377,6 @@ function StudentApp() {
 
   return (
     <div className="app">
-      <InstallPrompt />
-      <UpdatePrompt />
       <header className="app-header">
         <h1>StudiePlanner</h1>
         <button onClick={() => setShowSettings(true)} className="btn-icon">⚙️</button>
@@ -414,6 +423,7 @@ function StudentApp() {
                       onEdit={editSubject}
                       onDelete={deleteSubject}
                       onToggleTask={toggleTask}
+                      onAddTask={addTaskToSubject}
                     />
                   ))}
               </div>

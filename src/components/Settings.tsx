@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Settings as SettingsType, Subject, PlannedSession } from '../types';
 import { HelpSection } from './HelpSection';
+import { useAuth } from '../contexts/AuthContext';
+import { usePWA } from '../contexts/PWAContext';
+import { api } from '../services/api';
 
 interface Props {
   settings: SettingsType;
@@ -11,14 +14,62 @@ interface Props {
   onShowShare: () => void;
 }
 
-function generateShareCode(): string {
-  return Math.random().toString(36).substring(2, 10).toUpperCase();
-}
-
 const DAYS = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
+const APP_VERSION = '1.0.0';
 
 export function Settings({ settings, subjects, sessions, onSave, onClose, onShowShare }: Props) {
+  const { user } = useAuth();
+  const { canInstall, isInstalled, install, checkForUpdate, lastUpdateCheck } = usePWA();
+
   const [copied, setCopied] = useState(false);
+  const [mentorCode, setMentorCode] = useState('');
+  const [mentorError, setMentorError] = useState('');
+  const [mentorSuccess, setMentorSuccess] = useState('');
+  const [mentors, setMentors] = useState<Array<{ id: number; name: string }>>([]);
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+
+  // Load mentors on mount
+  useEffect(() => {
+    loadMentors();
+  }, []);
+
+  const loadMentors = async () => {
+    try {
+      const data = await api.getStudentMentors();
+      setMentors(data);
+    } catch (err) {
+      console.error('Failed to load mentors:', err);
+    }
+  };
+
+  const handleAcceptMentor = async () => {
+    if (!mentorCode.trim()) {
+      setMentorError('Voer een code in');
+      return;
+    }
+
+    setMentorError('');
+    setMentorSuccess('');
+
+    try {
+      const result = await api.acceptMentorInvite(mentorCode.trim());
+      setMentorSuccess(`Gekoppeld aan ${result.mentor.name}!`);
+      setMentorCode('');
+      loadMentors();
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setMentorError(error.message || 'Ongeldige of verlopen code');
+    }
+  };
+
+  const handleCheckUpdate = async () => {
+    setIsCheckingUpdate(true);
+    try {
+      await checkForUpdate();
+    } finally {
+      setIsCheckingUpdate(false);
+    }
+  };
 
   // Bereken studiesnelheid per vak
   const getStudyStats = () => {
@@ -46,16 +97,15 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
 
   const studyStats = getStudyStats();
 
-  // Get student code from current URL path
-  const pathMatch = window.location.pathname.match(/\/student\/([^/]+)/);
-  const studentCode = pathMatch ? pathMatch[1] : '';
+  // Get student code from user
+  const studentCode = user?.student_code || '';
 
   const shareLink = settings.shareCode && studentCode
     ? `${window.location.origin}/student/${studentCode}/mentor?code=${settings.shareCode}`
     : null;
 
   const createShareLink = () => {
-    const code = generateShareCode();
+    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
     onSave({ ...settings, shareCode: code });
   };
 
@@ -133,6 +183,40 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
         </div>
 
         <div className="settings-section">
+          <h3>Mentor koppelen</h3>
+          <p className="section-info">
+            Vraag je mentor om een code en voer deze hieronder in.
+          </p>
+
+          <div className="mentor-code-input">
+            <input
+              type="text"
+              value={mentorCode}
+              onChange={e => setMentorCode(e.target.value.toUpperCase())}
+              placeholder="Voer mentor code in"
+              maxLength={10}
+            />
+            <button onClick={handleAcceptMentor} className="btn-primary">
+              Koppelen
+            </button>
+          </div>
+
+          {mentorError && <p className="error-message">{mentorError}</p>}
+          {mentorSuccess && <p className="success-message">{mentorSuccess}</p>}
+
+          {mentors.length > 0 && (
+            <div className="mentor-list">
+              <h4>Mijn mentoren:</h4>
+              <ul>
+                {mentors.map(m => (
+                  <li key={m.id}>{m.name}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <div className="settings-section">
           <h3>Mentor meekijklink</h3>
           <p className="section-info">
             Deel deze link met mentoren/ouders om live mee te kijken.
@@ -191,8 +275,49 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
             Deel StudiePlanner met je klasgenoten!
           </p>
           <button onClick={onShowShare} className="btn-secondary">
-            📲 QR Code & Link
+            QR Code & Link
           </button>
+        </div>
+
+        <div className="settings-section">
+          <h3>App</h3>
+
+          {canInstall && (
+            <div className="form-group">
+              <button onClick={install} className="btn-primary btn-full">
+                Installeer App
+              </button>
+              <small>Installeer voor offline gebruik en snellere toegang</small>
+            </div>
+          )}
+
+          {isInstalled && (
+            <p className="installed-badge">App is geinstalleerd</p>
+          )}
+
+          <div className="form-group">
+            <button
+              onClick={handleCheckUpdate}
+              className="btn-secondary btn-full"
+              disabled={isCheckingUpdate}
+            >
+              {isCheckingUpdate ? 'Controleren...' : 'Controleer op updates'}
+            </button>
+            {lastUpdateCheck && (
+              <small>Laatst gecontroleerd: {lastUpdateCheck.toLocaleTimeString()}</small>
+            )}
+          </div>
+        </div>
+
+        <div className="settings-section">
+          <h3>Over</h3>
+          <div className="about-info">
+            <p><strong>StudiePlanner</strong></p>
+            <p>Versie {APP_VERSION}</p>
+            <p className="about-description">
+              Plan je studietijd, houd je voortgang bij en deel met je mentor.
+            </p>
+          </div>
         </div>
 
         <HelpSection />

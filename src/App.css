@@ -1651,6 +1651,51 @@ body {
   text-align: center;
 }
 
+/* Pomodoro indicator */
+.pomodoro-indicator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.pomodoro-indicator.work {
+  background: rgba(79, 70, 229, 0.1);
+  border: 1px solid var(--primary);
+}
+
+.pomodoro-indicator.break {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid #10b981;
+}
+
+.pomodoro-phase {
+  font-weight: 600;
+}
+
+.pomodoro-indicator.work .pomodoro-phase {
+  color: var(--primary);
+}
+
+.pomodoro-indicator.break .pomodoro-phase {
+  color: #10b981;
+}
+
+.pomodoro-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.timer-total {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
 /* Check-in modal (15 min reminder) */
 .checkin-overlay {
   position: fixed;

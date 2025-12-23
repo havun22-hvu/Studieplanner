@@ -492,6 +492,7 @@ function StudentApp() {
           session={timerSession}
           subject={getSessionSubject(timerSession)}
           task={getSessionTask(timerSession)}
+          settings={settings}
           onComplete={handleTimerComplete}
           onCancel={() => setTimerSession(null)}
         />

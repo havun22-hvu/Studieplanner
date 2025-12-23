@@ -41,14 +41,21 @@ class ApiService {
 
   // Auth: naam + pincode (vereenvoudigd)
   async register(name: string, pincode: string) {
-    return this.request<{ token: string; user: { id: number; name: string; student_code: string } }>('/register', {
+    return this.request<{ token: string; user: { id: number; name: string; student_code: string; role: 'student' | 'mentor' } }>('/register', {
+      method: 'POST',
+      body: JSON.stringify({ name, pincode }),
+    });
+  }
+
+  async registerMentor(name: string, pincode: string) {
+    return this.request<{ token: string; user: { id: number; name: string; student_code: string; role: 'student' | 'mentor' } }>('/register/mentor', {
       method: 'POST',
       body: JSON.stringify({ name, pincode }),
     });
   }
 
   async login(name: string, pincode: string) {
-    return this.request<{ token: string; user: { id: number; name: string; student_code: string } }>('/login', {
+    return this.request<{ token: string; user: { id: number; name: string; student_code: string; role: 'student' | 'mentor' } }>('/login', {
       method: 'POST',
       body: JSON.stringify({ name, pincode }),
     });
@@ -61,7 +68,69 @@ class ApiService {
   }
 
   async getUser() {
-    return this.request<{ id: number; name: string; student_code: string }>('/user');
+    return this.request<{ id: number; name: string; student_code: string; role: 'student' | 'mentor' }>('/user');
+  }
+
+  // Mentor endpoints
+  async getMentorStudents() {
+    return this.request<Array<{ id: number; name: string; student_code: string }>>('/mentor/students');
+  }
+
+  async generateMentorInvite() {
+    return this.request<{ invite_code: string; message: string }>('/mentor/invite', {
+      method: 'POST',
+    });
+  }
+
+  async getStudentData(studentId: number) {
+    return this.request<{
+      student: { id: number; name: string };
+      subjects: Array<{
+        id: string;
+        name: string;
+        color: string;
+        examDate: string;
+        tasks: Array<{
+          id: string;
+          description: string;
+          estimatedMinutes: number;
+          plannedAmount: number;
+          unit: string;
+          completed: boolean;
+        }>;
+      }>;
+      sessions: Array<{
+        id: string;
+        date: string;
+        taskId: string;
+        subjectId: string;
+        hour: number | null;
+        minutesPlanned: number;
+        minutesActual: number | null;
+        amountPlanned: number;
+        amountActual: number | null;
+        unit: string;
+        completed: boolean;
+      }>;
+    }>(`/mentor/student/${studentId}`);
+  }
+
+  async removeStudent(studentId: number) {
+    return this.request<{ message: string }>(`/mentor/student/${studentId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Student mentor endpoints
+  async acceptMentorInvite(inviteCode: string) {
+    return this.request<{ message: string; mentor: { id: number; name: string } }>('/student/accept-mentor', {
+      method: 'POST',
+      body: JSON.stringify({ invite_code: inviteCode }),
+    });
+  }
+
+  async getStudentMentors() {
+    return this.request<Array<{ id: number; name: string }>>('/student/mentors');
   }
 
   // Study sessions

@@ -6,6 +6,7 @@ interface User {
   id: number;
   name: string;
   student_code: string;
+  role: 'student' | 'mentor';
 }
 
 interface AuthContextType {
@@ -14,6 +15,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (name: string, pincode: string) => Promise<void>;
   register: (name: string, pincode: string) => Promise<void>;
+  registerMentor: (name: string, pincode: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -51,6 +53,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(response.user);
   };
 
+  const registerMentor = async (name: string, pincode: string) => {
+    const response = await api.registerMentor(name, pincode);
+    api.setToken(response.token);
+    setUser(response.user);
+  };
+
   const logout = async () => {
     try { await api.logout(); } catch { /* ignore */ }
     api.setToken(null);
@@ -58,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, register, registerMentor, logout }}>
       {children}
     </AuthContext.Provider>
   );

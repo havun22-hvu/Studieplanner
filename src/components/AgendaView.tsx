@@ -8,6 +8,7 @@ interface Props {
   onCreateSession: (session: PlannedSession) => void;
   onSessionClick: (session: PlannedSession) => void;
   onToggleAlarm: (sessionId: string) => void;
+  readOnly?: boolean;
 }
 
 // Time slots from 8:00 to 20:00
@@ -22,7 +23,7 @@ interface DragItem {
   subject?: Subject;
 }
 
-export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSession: _onCreateSession, onSessionClick, onToggleAlarm }: Props) {
+export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSession: _onCreateSession, onSessionClick, onToggleAlarm, readOnly = false }: Props) {
   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
     const today = new Date();
     const day = today.getDay();

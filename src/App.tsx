@@ -10,6 +10,7 @@ import { StudyTimer } from './components/StudyTimer';
 import { SessionResultModal } from './components/SessionResultModal';
 import type { SessionResultData } from './components/SessionResultModal';
 import { MentorView } from './components/MentorView';
+import { MentorDashboard } from './components/MentorDashboard';
 import { StatsView } from './components/StatsView';
 import { SharePage } from './components/SharePage';
 import { autoPlanningSessions, generateId } from './utils/planning';
@@ -36,17 +37,27 @@ function App() {
     return <div className="auth-loading">Laden...</div>;
   }
 
+  // Determine where to redirect based on role
+  const getHomeRoute = () => {
+    if (!isAuthenticated || !user) return '/';
+    if (user.role === 'mentor') return '/mentor';
+    return `/student/${user.student_code}`;
+  };
+
   return (
     <Routes>
       <Route path="/" element={
-        isAuthenticated && user?.student_code
-          ? <Navigate to={`/student/${user.student_code}`} replace />
+        isAuthenticated && user
+          ? <Navigate to={getHomeRoute()} replace />
           : <AuthScreen />
       } />
       <Route path="/student/:studentCode" element={
-        isAuthenticated ? <StudentApp /> : <Navigate to="/" replace />
+        isAuthenticated && user?.role === 'student' ? <StudentApp /> : <Navigate to="/" replace />
       } />
       <Route path="/student/:studentCode/mentor" element={<MentorRoute />} />
+      <Route path="/mentor" element={
+        isAuthenticated && user?.role === 'mentor' ? <MentorDashboard /> : <Navigate to="/" replace />
+      } />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

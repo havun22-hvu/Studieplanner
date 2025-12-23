@@ -1248,6 +1248,8 @@ body {
   background: var(--card);
   width: 100%;
   max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
   margin: 0 auto;
   padding: 1.5rem;
   border-radius: 16px 16px 0 0;

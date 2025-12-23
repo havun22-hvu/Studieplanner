@@ -52,6 +52,141 @@ body {
   font-weight: 600;
 }
 
+/* Header Menu Dropdown */
+.header-menu-wrapper {
+  position: relative;
+}
+
+.header-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--card);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  min-width: 160px;
+  z-index: 200;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.header-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 0.95rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.header-dropdown button:hover {
+  background: var(--bg);
+}
+
+.header-dropdown button:not(:last-child) {
+  border-bottom: 1px solid var(--border);
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-content h2 {
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+}
+
+/* Help Modal */
+.help-modal .help-content h3 {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--primary);
+  font-size: 1rem;
+}
+
+.help-modal .help-content h3:first-child {
+  margin-top: 0;
+}
+
+.help-modal .help-content p {
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.help-modal .help-content ul {
+  margin-left: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.help-modal .help-content li {
+  margin-bottom: 0.5rem;
+}
+
+/* About Modal */
+.about-modal .about-content {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.about-modal .app-name {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.about-modal .app-tagline {
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.about-modal .app-version {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.about-modal .about-features {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  text-align: left;
+}
+
+.about-modal .about-features p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.about-modal .copyright {
+  margin-top: 1.5rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
 .reschedule-notice {
   background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
   color: white;

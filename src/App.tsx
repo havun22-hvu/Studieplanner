@@ -117,6 +117,9 @@ function StudentApp() {
   const [showForm, setShowForm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | undefined>();
   const [selectedSession, setSelectedSession] = useState<PlannedSession | null>(null);
   const [timerSession, setTimerSession] = useState<PlannedSession | null>(null);
@@ -523,7 +526,22 @@ function StudentApp() {
     <div className="app">
       <header className="app-header">
         <h1>StudiePlanner</h1>
-        <button onClick={() => setShowSettings(true)} className="btn-icon">⚙️</button>
+        <div className="header-menu-wrapper">
+          <button onClick={() => setShowMenu(!showMenu)} className="btn-icon">⚙️</button>
+          {showMenu && (
+            <div className="header-dropdown">
+              <button onClick={() => { setShowMenu(false); setShowSettings(true); }}>
+                ⚙️ Instellingen
+              </button>
+              <button onClick={() => { setShowMenu(false); setShowHelp(true); }}>
+                ❓ Help
+              </button>
+              <button onClick={() => { setShowMenu(false); setShowAbout(true); }}>
+                ℹ️ Over
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
       {rescheduledNotice && (
@@ -667,6 +685,51 @@ function StudentApp() {
           onSave={handleSessionResult}
           onCancel={() => { setSelectedSession(null); setTimerMinutes(0); }}
         />
+      )}
+
+      {showHelp && (
+        <div className="modal-overlay" onClick={() => setShowHelp(false)}>
+          <div className="modal-content help-modal" onClick={e => e.stopPropagation()}>
+            <h2>❓ Help</h2>
+            <div className="help-content">
+              <h3>Hoe werkt StudiePlanner?</h3>
+              <p><strong>1. Vakken toevoegen</strong><br/>Voeg je vakken toe met de toetsdatum. De app plant automatisch studietijd in.</p>
+              <p><strong>2. Taken maken</strong><br/>Maak per vak studietaken aan (bijv. "Hoofdstuk 3 leren", "50 blz lezen").</p>
+              <p><strong>3. Planning bekijken</strong><br/>Bekijk je weekplanning en sleep taken naar andere tijden indien nodig.</p>
+              <p><strong>4. Timer starten</strong><br/>Tik op een taak om de studietimer te starten. Na afloop vul je in hoeveel je hebt gedaan.</p>
+              <p><strong>5. Mentor koppelen</strong><br/>Genereer een code in Instellingen om je mentor/ouder toegang te geven.</p>
+              <h3>Tips</h3>
+              <ul>
+                <li>Zet Pomodoro aan voor betere focus (25 min werk, 5 min pauze)</li>
+                <li>Stel een dagelijkse herinnering in</li>
+                <li>Koppel je schoolsysteem voor automatische toetsimport</li>
+              </ul>
+            </div>
+            <button onClick={() => setShowHelp(false)} className="btn-primary">Sluiten</button>
+          </div>
+        </div>
+      )}
+
+      {showAbout && (
+        <div className="modal-overlay" onClick={() => setShowAbout(false)}>
+          <div className="modal-content about-modal" onClick={e => e.stopPropagation()}>
+            <h2>ℹ️ Over StudiePlanner</h2>
+            <div className="about-content">
+              <p className="app-name"><strong>StudiePlanner</strong></p>
+              <p className="app-tagline">Plan je studie slim en haal je deadlines</p>
+              <p className="app-version">Versie 1.8.3</p>
+              <div className="about-features">
+                <p>✓ Automatische studieplanning</p>
+                <p>✓ Pomodoro timer</p>
+                <p>✓ Voortgang bijhouden</p>
+                <p>✓ Mentor koppeling</p>
+                <p>✓ SOMtoday/Magister import</p>
+              </div>
+              <p className="copyright">© 2024 Havun</p>
+            </div>
+            <button onClick={() => setShowAbout(false)} className="btn-primary">Sluiten</button>
+          </div>
+        </div>
       )}
 
     </div>

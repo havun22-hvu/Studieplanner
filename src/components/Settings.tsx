@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import type { Settings as SettingsType, Subject, PlannedSession } from '../types';
-import { HelpSection } from './HelpSection';
 import { SchoolSystemSettings } from './SchoolSystemSettings';
 import { useAuth } from '../contexts/AuthContext';
 import { usePWA } from '../contexts/PWAContext';
@@ -19,7 +18,6 @@ interface Props {
 }
 
 const DAYS = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
-const APP_VERSION = '1.8.3';
 
 export function Settings({ settings, subjects, sessions, onSave, onClose, onShowShare, onImportTests, onImportHomework }: Props) {
   const { user } = useAuth();
@@ -410,19 +408,6 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
             )}
           </div>
         </div>
-
-        <div className="settings-section">
-          <h3>Over</h3>
-          <div className="about-info">
-            <p><strong>StudiePlanner</strong></p>
-            <p>Versie {APP_VERSION}</p>
-            <p className="about-description">
-              Plan je studietijd, houd je voortgang bij en deel met je mentor.
-            </p>
-          </div>
-        </div>
-
-        <HelpSection />
 
         <button onClick={onClose} className="btn-primary">Sluiten</button>
       </div>

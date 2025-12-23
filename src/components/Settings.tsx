@@ -3,6 +3,7 @@ import type { Settings as SettingsType, Subject, PlannedSession } from '../types
 import { HelpSection } from './HelpSection';
 import { useAuth } from '../contexts/AuthContext';
 import { usePWA } from '../contexts/PWAContext';
+import { useNotifications } from '../hooks/useNotifications';
 import { api } from '../services/api';
 
 interface Props {
@@ -15,11 +16,12 @@ interface Props {
 }
 
 const DAYS = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.3.0';
 
 export function Settings({ settings, subjects, sessions, onSave, onClose, onShowShare }: Props) {
   const { user } = useAuth();
   const { canInstall, isInstalled, install, checkForUpdate, lastUpdateCheck } = usePWA();
+  const { permission, requestPermission, isSupported } = useNotifications(settings);
 
   const [copied, setCopied] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
@@ -176,6 +178,99 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
               <span className="legend-item"><span className="legend-box free"></span> vrij</span>
             </div>
           </div>
+        </div>
+
+        <div className="settings-section">
+          <h3>Herinneringen</h3>
+
+          {isSupported ? (
+            <>
+              {permission !== 'granted' && (
+                <div className="form-group">
+                  <button onClick={requestPermission} className="btn-primary btn-full">
+                    Notificaties inschakelen
+                  </button>
+                  <small>Ontvang dagelijkse herinneringen om te studeren</small>
+                </div>
+              )}
+
+              {permission === 'granted' && (
+                <>
+                  <div className="form-group">
+                    <label className="toggle-label">
+                      <input
+                        type="checkbox"
+                        checked={settings.reminderEnabled ?? false}
+                        onChange={e => onSave({ ...settings, reminderEnabled: e.target.checked })}
+                      />
+                      <span>Dagelijkse herinnering</span>
+                    </label>
+                  </div>
+
+                  {settings.reminderEnabled && (
+                    <div className="form-group">
+                      <label>Herinneringstijd</label>
+                      <input
+                        type="time"
+                        value={settings.reminderTime ?? '16:00'}
+                        onChange={e => onSave({ ...settings, reminderTime: e.target.value })}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+
+              {permission === 'denied' && (
+                <p className="error-message">Notificaties zijn geblokkeerd. Wijzig dit in je browser instellingen.</p>
+              )}
+            </>
+          ) : (
+            <p className="section-info">Notificaties worden niet ondersteund in deze browser.</p>
+          )}
+        </div>
+
+        <div className="settings-section">
+          <h3>Pomodoro Timer</h3>
+          <p className="section-info">
+            Studeer in blokken met korte pauzes ertussen.
+          </p>
+
+          <div className="form-group">
+            <label className="toggle-label">
+              <input
+                type="checkbox"
+                checked={settings.pomodoroEnabled ?? false}
+                onChange={e => onSave({ ...settings, pomodoroEnabled: e.target.checked })}
+              />
+              <span>Pomodoro modus</span>
+            </label>
+          </div>
+
+          {settings.pomodoroEnabled && (
+            <>
+              <div className="form-group">
+                <label>Werk tijd (minuten)</label>
+                <input
+                  type="number"
+                  value={settings.pomodoroWorkMinutes ?? 25}
+                  onChange={e => onSave({ ...settings, pomodoroWorkMinutes: parseInt(e.target.value) || 25 })}
+                  min="5"
+                  max="60"
+                  step="5"
+                />
+              </div>
+              <div className="form-group">
+                <label>Pauze tijd (minuten)</label>
+                <input
+                  type="number"
+                  value={settings.pomodoroBreakMinutes ?? 5}
+                  onChange={e => onSave({ ...settings, pomodoroBreakMinutes: parseInt(e.target.value) || 5 })}
+                  min="1"
+                  max="30"
+                />
+              </div>
+            </>
+          )}
         </div>
 
         <div className="settings-section">

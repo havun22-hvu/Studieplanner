@@ -1949,6 +1949,34 @@ body {
   margin-top: 0.5rem !important;
 }
 
+/* Toggle label for checkboxes */
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--primary);
+}
+
+.toggle-label span {
+  font-size: 0.95rem;
+}
+
+/* Time input styling */
+input[type="time"] {
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 1rem;
+  width: 100%;
+}
+
 /* Invalid Code Page */
 .invalid-code {
   display: flex;

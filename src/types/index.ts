@@ -78,6 +78,13 @@ export interface Settings {
   studentName: string;
   mentors: Mentor[];
   shareCode?: string; // unique code for sharing agenda with mentors
+  // Notification settings
+  reminderEnabled?: boolean;
+  reminderTime?: string; // "HH:MM" format, e.g. "16:00"
+  // Pomodoro settings
+  pomodoroEnabled?: boolean;
+  pomodoroWorkMinutes?: number; // default 25
+  pomodoroBreakMinutes?: number; // default 5
 }
 
 // Mentor/Parent info

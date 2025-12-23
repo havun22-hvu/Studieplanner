@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Settings as SettingsType, Subject, PlannedSession } from '../types';
 import { HelpSection } from './HelpSection';
+import { SOMtodaySettings } from './SOMtodaySettings';
 import { useAuth } from '../contexts/AuthContext';
 import { usePWA } from '../contexts/PWAContext';
 import { useNotifications } from '../hooks/useNotifications';
@@ -13,12 +14,14 @@ interface Props {
   onSave: (settings: SettingsType) => void;
   onClose: () => void;
   onShowShare: () => void;
+  onImportTests?: (tests: { vak: string; datum: string; omschrijving: string }[]) => void;
+  onImportHomework?: (homework: { vak: string; omschrijving: string }[]) => void;
 }
 
 const DAYS = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
-const APP_VERSION = '1.6.0';
+const APP_VERSION = '1.7.0';
 
-export function Settings({ settings, subjects, sessions, onSave, onClose, onShowShare }: Props) {
+export function Settings({ settings, subjects, sessions, onSave, onClose, onShowShare, onImportTests, onImportHomework }: Props) {
   const { user } = useAuth();
   const { canInstall, isInstalled, install, checkForUpdate, lastUpdateCheck } = usePWA();
   const { permission, requestPermission, isSupported } = useNotifications(settings);
@@ -271,6 +274,13 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
               </div>
             </>
           )}
+        </div>
+
+        <div className="settings-section">
+          <SOMtodaySettings
+            onImportTests={onImportTests || (() => {})}
+            onImportHomework={onImportHomework || (() => {})}
+          />
         </div>
 
         <div className="settings-section">

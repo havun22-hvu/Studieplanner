@@ -242,6 +242,76 @@ function StudentApp() {
     setCatchUpSuggestions(prev => prev.filter(s => s.subjectId !== subjectId));
   };
 
+  // SOMtoday import handlers
+  const handleImportTests = (tests: { vak: string; datum: string; omschrijving: string }[]) => {
+    let imported = 0;
+    for (const test of tests) {
+      // Check if subject already exists
+      const existing = subjects.find(s => s.name.toLowerCase() === test.vak.toLowerCase());
+
+      if (existing) {
+        // Update exam date if needed
+        if (!existing.examDate || test.datum < existing.examDate) {
+          setSubjects(subjects.map(s =>
+            s.id === existing.id ? { ...s, examDate: test.datum } : s
+          ));
+        }
+      } else {
+        // Create new subject with test as task
+        const subjectId = generateId();
+        const newSubject: Subject = {
+          id: subjectId,
+          name: test.vak,
+          color: `hsl(${Math.random() * 360}, 70%, 60%)`,
+          examDate: test.datum,
+          tasks: [{
+            id: generateId(),
+            subjectId,
+            description: test.omschrijving || 'Voorbereiden toets',
+            estimatedMinutes: 60,
+            plannedAmount: 1,
+            unit: 'uur',
+            completed: false,
+          }],
+        };
+        setSubjects(prev => [...prev, newSubject]);
+        imported++;
+      }
+    }
+    if (imported > 0) {
+      alert(`${imported} toets(en) geïmporteerd van SOMtoday`);
+    }
+  };
+
+  const handleImportHomework = (homework: { vak: string; omschrijving: string }[]) => {
+    let imported = 0;
+    for (const hw of homework) {
+      const existing = subjects.find(s => s.name.toLowerCase() === hw.vak.toLowerCase());
+
+      if (existing) {
+        // Add task to existing subject
+        const newTask: StudyTask = {
+          id: generateId(),
+          subjectId: existing.id,
+          description: hw.omschrijving,
+          estimatedMinutes: 30,
+          plannedAmount: 1,
+          unit: 'opdracht',
+          completed: false,
+        };
+        setSubjects(subjects.map(s =>
+          s.id === existing.id
+            ? { ...s, tasks: [...s.tasks, newTask] }
+            : s
+        ));
+        imported++;
+      }
+    }
+    if (imported > 0) {
+      alert(`${imported} huiswerk item(s) geïmporteerd van SOMtoday`);
+    }
+  };
+
   // Subject CRUD
   const saveSubject = (subject: Subject) => {
     // Waarschuwing bij taken > 90 minuten
@@ -560,6 +630,8 @@ function StudentApp() {
             setShowSettings(false);
             setShowShare(true);
           }}
+          onImportTests={handleImportTests}
+          onImportHomework={handleImportHomework}
         />
       )}
 

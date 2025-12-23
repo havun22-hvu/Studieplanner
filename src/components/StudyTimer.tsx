@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { PlannedSession, Subject, StudyTask } from '../types';
+import { api } from '../services/api';
 
 interface Props {
   session: PlannedSession;
@@ -180,7 +181,7 @@ export function StudyTimer({ session, subject, task, onComplete, onCancel }: Pro
     }
   }, [elapsedSeconds, isRunning, isPaused, plannedSeconds, timeUpNotified, subject, task, saveTimerState]);
 
-  const handleStart = () => {
+  const handleStart = async () => {
     setIsRunning(true);
     setIsPaused(false);
     startTimeRef.current = Date.now();
@@ -188,6 +189,20 @@ export function StudyTimer({ session, subject, task, onComplete, onCancel }: Pro
     lastCheckMinuteRef.current = 0;
 
     saveTimerState();
+
+    // Send start to server
+    try {
+      await api.startSession({
+        session_id: session.id,
+        subject_name: subject?.name || 'Onbekend',
+        task_description: task?.description || 'Onbekend',
+        minutes_planned: session.minutesPlanned,
+        amount_planned: session.amountPlanned,
+        unit: session.unit,
+      });
+    } catch (e) {
+      console.log('Failed to sync session start:', e);
+    }
 
     intervalRef.current = window.setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTimeRef.current - totalPausedMsRef.current) / 1000);
@@ -222,7 +237,7 @@ export function StudyTimer({ session, subject, task, onComplete, onCancel }: Pro
     }, 1000);
   };
 
-  const handleStop = () => {
+  const handleStop = async () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -231,6 +246,18 @@ export function StudyTimer({ session, subject, task, onComplete, onCancel }: Pro
     clearTimerState();
 
     const minutesSpent = Math.ceil(elapsedSeconds / 60);
+
+    // Send stop to server
+    try {
+      await api.stopSession({
+        session_id: session.id,
+        minutes_actual: minutesSpent,
+        status: 'completed',
+      });
+    } catch (e) {
+      console.log('Failed to sync session stop:', e);
+    }
+
     onComplete(minutesSpent);
   };
 
@@ -238,8 +265,21 @@ export function StudyTimer({ session, subject, task, onComplete, onCancel }: Pro
     setShowCheckIn(false);
   };
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
     clearTimerState();
+
+    // Send cancel to server if timer was running
+    if (isRunning) {
+      try {
+        await api.stopSession({
+          session_id: session.id,
+          status: 'cancelled',
+        });
+      } catch (e) {
+        console.log('Failed to sync session cancel:', e);
+      }
+    }
+
     onCancel();
   };
 

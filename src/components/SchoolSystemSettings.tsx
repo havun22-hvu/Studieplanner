@@ -39,18 +39,22 @@ export function SchoolSystemSettings({ onImportTests, onImportHomework }: Props)
   const checkStatus = async () => {
     setLoading(true);
 
-    const [somStatus, magStatus] = await Promise.all([
-      somtoday.getStatus(),
-      magister.getStatus(),
-    ]);
+    try {
+      const [somStatus, magStatus] = await Promise.all([
+        somtoday.getStatus().catch(() => ({ connected: false })),
+        magister.getStatus().catch(() => ({ connected: false })),
+      ]);
 
-    setSomtodayStatus(somStatus);
-    setMagisterStatus(magStatus);
+      setSomtodayStatus(somStatus);
+      setMagisterStatus(magStatus);
 
-    if (somStatus.connected) {
-      setActiveSystem('somtoday');
-    } else if (magStatus.connected) {
-      setActiveSystem('magister');
+      if (somStatus.connected) {
+        setActiveSystem('somtoday');
+      } else if (magStatus.connected) {
+        setActiveSystem('magister');
+      }
+    } catch (e) {
+      console.log('Status check failed:', e);
     }
 
     setLoading(false);

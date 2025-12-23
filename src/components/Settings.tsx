@@ -19,7 +19,7 @@ interface Props {
 }
 
 const DAYS = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
-const APP_VERSION = '1.8.1';
+const APP_VERSION = '1.8.2';
 
 export function Settings({ settings, subjects, sessions, onSave, onClose, onShowShare, onImportTests, onImportHomework }: Props) {
   const { user } = useAuth();

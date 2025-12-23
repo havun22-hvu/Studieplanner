@@ -9,6 +9,7 @@ import { StudyTimer } from './components/StudyTimer';
 import { SessionResultModal } from './components/SessionResultModal';
 import type { SessionResultData } from './components/SessionResultModal';
 import { MentorView } from './components/MentorView';
+import { StatsView } from './components/StatsView';
 // import { TaskSplitDialog } from './components/TaskSplitDialog';
 import { autoPlanningSessions, generateId } from './utils/planning';
 import { InstallPrompt } from './components/InstallPrompt';
@@ -23,7 +24,7 @@ function getMentorMode(): string | null {
   return params.get('mentor');
 }
 
-type View = 'subjects' | 'planning';
+type View = 'subjects' | 'planning' | 'stats';
 
 const DEFAULT_SETTINGS: SettingsType = {
   dailyStudyMinutes: 90,
@@ -349,6 +350,12 @@ function App() {
         >
           Planning
         </button>
+        <button
+          className={view === 'stats' ? 'active' : ''}
+          onClick={() => setView('stats')}
+        >
+          Stats
+        </button>
       </nav>
 
       <main className="app-main">
@@ -406,6 +413,10 @@ function App() {
               </button>
             )}
           </>
+        )}
+
+        {view === 'stats' && (
+          <StatsView subjects={subjects} sessions={sessions} />
         )}
       </main>
 

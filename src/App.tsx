@@ -1,21 +1,50 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { Subject, PlannedSession, Settings as SettingsType } from './types';
+import type { Subject, PlannedSession, Settings as SettingsType } from './types';
 import { SubjectForm } from './components/SubjectForm';
 import { SubjectCard } from './components/SubjectCard';
-import { PlanningView } from './components/PlanningView';
+import { AgendaView } from './components/AgendaView';
 import { Settings } from './components/Settings';
-import { autoPlanningSessions } from './utils/planning';
+import { StudyTimer } from './components/StudyTimer';
+import { SessionResultModal } from './components/SessionResultModal';
+import type { SessionResultData } from './components/SessionResultModal';
+import { MentorView } from './components/MentorView';
+// import { TaskSplitDialog } from './components/TaskSplitDialog';
+import { autoPlanningSessions, generateId } from './utils/planning';
+import { InstallPrompt } from './components/InstallPrompt';
+import { UpdatePrompt } from './components/UpdatePrompt';
+import { AuthScreen } from './components/AuthScreen';
+import { useAuth } from './contexts/AuthContext';
 import './App.css';
+
+// Check if we're in mentor mode (URL has ?mentor=CODE)
+function getMentorMode(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('mentor');
+}
 
 type View = 'subjects' | 'planning';
 
 const DEFAULT_SETTINGS: SettingsType = {
   dailyStudyMinutes: 90,
   breakDays: [0], // Sunday off
+  studentName: '',
+  mentors: [],
 };
 
 function App() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Show loading state
+  if (isLoading) {
+    return <div className="auth-loading">Laden...</div>;
+  }
+
+  // Show login if not authenticated
+  if (!isAuthenticated) {
+    return <AuthScreen />;
+  }
+
   const [subjects, setSubjects] = useLocalStorage<Subject[]>('studieplanner-subjects', []);
   const [sessions, setSessions] = useLocalStorage<PlannedSession[]>('studieplanner-sessions', []);
   const [settings, setSettings] = useLocalStorage<SettingsType>('studieplanner-settings', DEFAULT_SETTINGS);
@@ -24,25 +53,118 @@ function App() {
   const [showForm, setShowForm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | undefined>();
+  const [selectedSession, setSelectedSession] = useState<PlannedSession | null>(null);
+  const [timerSession, setTimerSession] = useState<PlannedSession | null>(null);
+  const [timerMinutes, setTimerMinutes] = useState<number>(0);
+
+  // Check if in mentor mode
+  const mentorCode = getMentorMode();
+  const isMentorMode = mentorCode !== null && mentorCode === settings.shareCode;
+
+  // Alarm check effect
+  useEffect(() => {
+    const checkAlarms = () => {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      const todayStr = now.toISOString().split('T')[0];
+
+      sessions.forEach(session => {
+        if (!session.alarm?.enabled || session.completed || session.hour === undefined) return;
+        if (session.date !== todayStr) return;
+
+        const sessionMinutes = session.hour * 60;
+        const currentMinutes = currentHour * 60 + currentMinute;
+        const minutesBefore = session.alarm.minutesBefore || 5;
+
+        // Check if we're within the alarm window
+        if (currentMinutes >= sessionMinutes - minutesBefore && currentMinutes < sessionMinutes) {
+          const subject = subjects.find(s => s.id === session.subjectId);
+          const task = subject?.tasks.find(t => t.id === session.taskId);
+
+          // Show notification
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification(`Studietijd over ${minutesBefore} minuten!`, {
+              body: `${subject?.name}: ${task?.description}`,
+              icon: '/icon-192.png',
+            });
+          }
+
+          // Play sound if enabled
+          if (session.alarm.sound) {
+            const audio = new Audio('/notification.mp3');
+            audio.play().catch(() => {});
+          }
+        }
+      });
+    };
+
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    const interval = setInterval(checkAlarms, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [sessions, subjects]);
 
   // Subject CRUD
+  // Subject CRUD
   const saveSubject = (subject: Subject) => {
+    // Waarschuwing bij taken > 90 minuten
+    const longTasks = subject.tasks.filter(t => t.estimatedMinutes > 90);
+    if (longTasks.length > 0) {
+      const names = longTasks.map(t => `- ${t.description} (${t.estimatedMinutes} min)`).join('\n');
+      alert(`Let op: Na 1,5 uur studeren is een pauze van 30 min aan te raden!\n\nDeze taken zijn langer:\n${names}`);
+    }
+
     const existing = subjects.find(s => s.id === subject.id);
+
     if (existing) {
+      const newTaskIds = new Set(subject.tasks.map(t => t.id));
+      const cleanedSessions = sessions.filter(s => {
+        if (s.subjectId !== subject.id) return true;
+        return newTaskIds.has(s.taskId);
+      });
+      setSessions(cleanedSessions);
       setSubjects(subjects.map(s => s.id === subject.id ? subject : s));
     } else {
       setSubjects([...subjects, subject]);
+      // Maak sessies voor elke taak - leerling plant zelf
+      const newSessions = subject.tasks.map(task => ({
+        id: generateId(),
+        date: subject.examDate,
+        taskId: task.id,
+        subjectId: subject.id,
+        minutesPlanned: task.estimatedMinutes,
+        amountPlanned: task.plannedAmount,
+        unit: task.unit,
+        completed: false,
+      }));
+      setSessions([...sessions, ...newSessions]);
     }
+
     setShowForm(false);
     setEditingSubject(undefined);
-    regeneratePlanning([...subjects.filter(s => s.id !== subject.id), subject]);
   };
 
+
   const deleteSubject = (id: string) => {
-    if (confirm('Weet je zeker dat je dit vak wilt verwijderen?')) {
-      const newSubjects = subjects.filter(s => s.id !== id);
-      setSubjects(newSubjects);
-      regeneratePlanning(newSubjects);
+    const subject = subjects.find(s => s.id === id);
+    if (!subject) return;
+
+    const taskCount = subject.tasks.length;
+    const sessionCount = sessions.filter(s => s.subjectId === id).length;
+
+    const message = `Weet je zeker dat je "${subject.name}" wilt verwijderen?\n\n` +
+      `Dit verwijdert ook:\n` +
+      `• ${taskCount} studietaak${taskCount !== 1 ? 'en' : ''}\n` +
+      `• ${sessionCount} geplande sessie${sessionCount !== 1 ? 's' : ''} uit de agenda\n\n` +
+      `Deze actie kan niet ongedaan worden gemaakt.`;
+
+    if (confirm(message)) {
+      setSubjects(subjects.filter(s => s.id !== id));
+      setSessions(sessions.filter(s => s.subjectId !== id));
     }
   };
 
@@ -64,11 +186,103 @@ function App() {
     }));
   };
 
-  // Toggle session completion
-  const toggleSession = (sessionId: string) => {
+  // Update session date and hour (for drag & drop)
+  const updateSession = (sessionId: string, newDate: string, newHour: number | undefined) => {
     setSessions(sessions.map(session =>
-      session.id === sessionId ? { ...session, completed: !session.completed } : session
+      session.id === sessionId ? { ...session, date: newDate, hour: newHour } : session
     ));
+  };
+
+  // Toggle alarm for session
+  const toggleAlarm = (sessionId: string) => {
+    setSessions(sessions.map(session => {
+      if (session.id !== sessionId) return session;
+      const currentAlarm = session.alarm || { enabled: false, minutesBefore: 5, sound: true };
+      return {
+        ...session,
+        alarm: { ...currentAlarm, enabled: !currentAlarm.enabled },
+      };
+    }));
+  };
+
+  // Handle session click - open timer
+  const handleSessionClick = (session: PlannedSession) => {
+    if (session.completed) {
+      // Already completed, show info
+      alert('Deze sessie is al afgerond!');
+      return;
+    }
+    // Open timer
+    setTimerSession(session);
+
+    // Notify mentors on start
+    notifyMentors('start', session);
+  };
+
+  // Handle timer complete - open result modal
+  const handleTimerComplete = (minutesSpent: number) => {
+    setTimerMinutes(minutesSpent);
+    setSelectedSession(timerSession);
+    setTimerSession(null);
+  };
+
+  // Notify mentors (placeholder - needs backend for real implementation)
+  const notifyMentors = (type: 'start' | 'complete', session: PlannedSession, result?: SessionResultData) => {
+    const subject = subjects.find(s => s.id === session.subjectId);
+    const task = subject?.tasks.find(t => t.id === session.taskId);
+    const studentName = settings.studentName || 'De leerling';
+
+    settings.mentors?.forEach(mentor => {
+      const shouldNotify = type === 'start' ? mentor.notifyOnStart : mentor.notifyOnComplete;
+      if (!shouldNotify) return;
+
+      // For now, show a console log (replace with actual notification service later)
+      if (type === 'start') {
+        console.log(`[Mentor melding voor ${mentor.name}]: ${studentName} is begonnen met ${subject?.name}: ${task?.description}`);
+      } else {
+        const done = result?.amountCompleted || 0;
+        const planned = session.amountPlanned;
+        console.log(`[Mentor melding voor ${mentor.name}]: ${studentName} is klaar met ${subject?.name}: ${task?.description} (${done}/${planned} ${session.unit})`);
+      }
+
+      // Show browser notification if available
+      if ('Notification' in window && Notification.permission === 'granted') {
+        const title = type === 'start'
+          ? `${studentName} begint met studeren`
+          : `${studentName} is klaar`;
+        const body = type === 'start'
+          ? `${subject?.name}: ${task?.description}`
+          : `${subject?.name}: ${task?.description} - ${result?.amountCompleted}/${session.amountPlanned} ${session.unit}`;
+
+        new Notification(title, { body });
+      }
+    });
+  };
+
+  // Handle session result submission
+  const handleSessionResult = (result: SessionResultData) => {
+    const session = sessions.find(s => s.id === result.sessionId);
+    if (!session) return;
+
+    // Only mark as completed if the full amount was done
+    const isFullyCompleted = result.amountCompleted >= session.amountPlanned;
+
+    // Update session with actual minutes and amount
+    setSessions(sessions.map(s => {
+      if (s.id !== result.sessionId) return s;
+      return { ...s, completed: isFullyCompleted, minutesActual: result.minutesSpent, amountActual: result.amountCompleted };
+    }));
+
+    // Notify mentors on complete
+    notifyMentors('complete', session, result);
+
+    // If task wasn't fully completed, show message (session stays open for retry)
+    if (!isFullyCompleted) {
+      alert(`Nog ${result.remainingAmount} ${session.unit} te doen.\n\nJe kunt dit blok later opnieuw starten.`);
+    }
+
+    setSelectedSession(null);
+    setTimerMinutes(0);
   };
 
   // Regenerate planning
@@ -77,10 +291,48 @@ function App() {
     setSessions(newSessions);
   };
 
+  // Get subject and task for selected session
+  const getSessionSubject = (session: PlannedSession | null) => {
+    if (!session) return undefined;
+    return subjects.find(s => s.id === session.subjectId);
+  };
+
+  const getSessionTask = (session: PlannedSession | null) => {
+    if (!session) return undefined;
+    const subject = getSessionSubject(session);
+    return subject?.tasks.find(t => t.id === session.taskId);
+  };
+
+  // If in mentor mode, show read-only mentor view
+  if (isMentorMode) {
+    return (
+      <MentorView
+        studentName={settings.studentName}
+        subjects={subjects}
+        sessions={sessions}
+      />
+    );
+  }
+
+  // Invalid mentor code
+  if (mentorCode !== null && !isMentorMode) {
+    return (
+      <div className="app">
+        <div className="invalid-code">
+          <h1>Ongeldige link</h1>
+          <p>Deze mentor-link is ongeldig of verlopen.</p>
+          <a href="/">Terug naar de app</a>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app">
+      <InstallPrompt />
+      <UpdatePrompt />
       <header className="app-header">
-        <h1>📚 StudiePlanner</h1>
+        <h1>StudiePlanner</h1>
         <button onClick={() => setShowSettings(true)} className="btn-icon">⚙️</button>
       </header>
 
@@ -89,13 +341,13 @@ function App() {
           className={view === 'subjects' ? 'active' : ''}
           onClick={() => setView('subjects')}
         >
-          📖 Vakken
+          Vakken
         </button>
         <button
           className={view === 'planning' ? 'active' : ''}
           onClick={() => setView('planning')}
         >
-          📅 Planning
+          Planning
         </button>
       </nav>
 
@@ -115,6 +367,7 @@ function App() {
                     <SubjectCard
                       key={subject.id}
                       subject={subject}
+                      sessions={sessions.filter(s => s.subjectId === subject.id)}
                       onEdit={editSubject}
                       onDelete={deleteSubject}
                       onToggleTask={toggleTask}
@@ -136,17 +389,20 @@ function App() {
 
         {view === 'planning' && (
           <>
-            <PlanningView
+            <AgendaView
               subjects={subjects}
               sessions={sessions}
-              onToggleSession={toggleSession}
+              onUpdateSession={updateSession}
+              onCreateSession={(session) => setSessions([...sessions, session])}
+              onSessionClick={handleSessionClick}
+              onToggleAlarm={toggleAlarm}
             />
             {subjects.length > 0 && (
               <button
                 className="btn-regenerate"
                 onClick={() => regeneratePlanning()}
               >
-                🔄 Herplan
+                Herplan
               </button>
             )}
           </>
@@ -156,6 +412,8 @@ function App() {
       {showSettings && (
         <Settings
           settings={settings}
+          subjects={subjects}
+          sessions={sessions}
           onSave={(newSettings) => {
             setSettings(newSettings);
             regeneratePlanning();
@@ -163,6 +421,28 @@ function App() {
           onClose={() => setShowSettings(false)}
         />
       )}
+
+      {timerSession && (
+        <StudyTimer
+          session={timerSession}
+          subject={getSessionSubject(timerSession)}
+          task={getSessionTask(timerSession)}
+          onComplete={handleTimerComplete}
+          onCancel={() => setTimerSession(null)}
+        />
+      )}
+
+      {selectedSession && (
+        <SessionResultModal
+          session={selectedSession}
+          subject={getSessionSubject(selectedSession)}
+          task={getSessionTask(selectedSession)}
+          initialMinutes={timerMinutes}
+          onSave={handleSessionResult}
+          onCancel={() => { setSelectedSession(null); setTimerMinutes(0); }}
+        />
+      )}
+
     </div>
   );
 }

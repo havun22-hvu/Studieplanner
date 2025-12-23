@@ -5,6 +5,7 @@ import { api } from '../services/api';
 interface User {
   id: number;
   name: string;
+  student_code: string;
 }
 
 interface AuthContextType {

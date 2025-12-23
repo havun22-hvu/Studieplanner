@@ -41,14 +41,14 @@ class ApiService {
 
   // Auth: naam + pincode (vereenvoudigd)
   async register(name: string, pincode: string) {
-    return this.request<{ token: string; user: { id: number; name: string } }>('/register', {
+    return this.request<{ token: string; user: { id: number; name: string; student_code: string } }>('/register', {
       method: 'POST',
       body: JSON.stringify({ name, pincode }),
     });
   }
 
   async login(name: string, pincode: string) {
-    return this.request<{ token: string; user: { id: number; name: string } }>('/login', {
+    return this.request<{ token: string; user: { id: number; name: string; student_code: string } }>('/login', {
       method: 'POST',
       body: JSON.stringify({ name, pincode }),
     });
@@ -61,7 +61,7 @@ class ApiService {
   }
 
   async getUser() {
-    return this.request<{ id: number; name: string }>('/user');
+    return this.request<{ id: number; name: string; student_code: string }>('/user');
   }
 
   // Study sessions

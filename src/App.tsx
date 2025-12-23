@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import type { Subject, PlannedSession, Settings as SettingsType } from './types';
 import { SubjectForm } from './components/SubjectForm';
@@ -10,19 +11,13 @@ import { SessionResultModal } from './components/SessionResultModal';
 import type { SessionResultData } from './components/SessionResultModal';
 import { MentorView } from './components/MentorView';
 import { StatsView } from './components/StatsView';
-// import { TaskSplitDialog } from './components/TaskSplitDialog';
+import { SharePage } from './components/SharePage';
 import { autoPlanningSessions, generateId } from './utils/planning';
 import { InstallPrompt } from './components/InstallPrompt';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { AuthScreen } from './components/AuthScreen';
 import { useAuth } from './contexts/AuthContext';
 import './App.css';
-
-// Check if we're in mentor mode (URL has ?mentor=CODE)
-function getMentorMode(): string | null {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('mentor');
-}
 
 type View = 'subjects' | 'planning' | 'stats';
 
@@ -33,18 +28,75 @@ const DEFAULT_SETTINGS: SettingsType = {
   mentors: [],
 };
 
+// Main App with routing
 function App() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
-  // Show loading state
   if (isLoading) {
     return <div className="auth-loading">Laden...</div>;
   }
 
-  // Show login if not authenticated
-  if (!isAuthenticated) {
-    return <AuthScreen />;
+  return (
+    <Routes>
+      <Route path="/" element={
+        isAuthenticated && user?.student_code
+          ? <Navigate to={`/student/${user.student_code}`} replace />
+          : <AuthScreen />
+      } />
+      <Route path="/student/:studentCode" element={
+        isAuthenticated ? <StudentApp /> : <Navigate to="/" replace />
+      } />
+      <Route path="/student/:studentCode/mentor" element={<MentorRoute />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+// Mentor view route component
+function MentorRoute() {
+  const { studentCode } = useParams();
+  const [searchParams] = useSearchParams();
+  const shareCode = searchParams.get('code');
+
+  // Load student data from localStorage (for demo) - in production this would be from API
+  const [settings] = useLocalStorage<SettingsType>('studieplanner-settings', DEFAULT_SETTINGS);
+  const [subjects] = useLocalStorage<Subject[]>('studieplanner-subjects', []);
+  const [sessions] = useLocalStorage<PlannedSession[]>('studieplanner-sessions', []);
+
+  // Validate share code
+  if (!shareCode || shareCode !== settings.shareCode) {
+    return (
+      <div className="app">
+        <div className="invalid-code">
+          <h1>Ongeldige link</h1>
+          <p>Deze mentor-link is ongeldig of verlopen.</p>
+          <a href="/">Terug naar de app</a>
+        </div>
+      </div>
+    );
   }
+
+  return (
+    <MentorView
+      studentName={settings.studentName}
+      subjects={subjects}
+      sessions={sessions}
+    />
+  );
+}
+
+// Student app component
+function StudentApp() {
+  const { user } = useAuth();
+  const { studentCode } = useParams();
+  const navigate = useNavigate();
+
+  // Verify user matches route
+  useEffect(() => {
+    if (user?.student_code && user.student_code !== studentCode) {
+      navigate(`/student/${user.student_code}`, { replace: true });
+    }
+  }, [user, studentCode, navigate]);
 
   const [subjects, setSubjects] = useLocalStorage<Subject[]>('studieplanner-subjects', []);
   const [sessions, setSessions] = useLocalStorage<PlannedSession[]>('studieplanner-sessions', []);
@@ -53,14 +105,11 @@ function App() {
   const [view, setView] = useState<View>('subjects');
   const [showForm, setShowForm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | undefined>();
   const [selectedSession, setSelectedSession] = useState<PlannedSession | null>(null);
   const [timerSession, setTimerSession] = useState<PlannedSession | null>(null);
   const [timerMinutes, setTimerMinutes] = useState<number>(0);
-
-  // Check if in mentor mode
-  const mentorCode = getMentorMode();
-  const isMentorMode = mentorCode !== null && mentorCode === settings.shareCode;
 
   // Alarm check effect
   useEffect(() => {
@@ -304,30 +353,6 @@ function App() {
     return subject?.tasks.find(t => t.id === session.taskId);
   };
 
-  // If in mentor mode, show read-only mentor view
-  if (isMentorMode) {
-    return (
-      <MentorView
-        studentName={settings.studentName}
-        subjects={subjects}
-        sessions={sessions}
-      />
-    );
-  }
-
-  // Invalid mentor code
-  if (mentorCode !== null && !isMentorMode) {
-    return (
-      <div className="app">
-        <div className="invalid-code">
-          <h1>Ongeldige link</h1>
-          <p>Deze mentor-link is ongeldig of verlopen.</p>
-          <a href="/">Terug naar de app</a>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="app">
       <InstallPrompt />
@@ -430,7 +455,15 @@ function App() {
             regeneratePlanning();
           }}
           onClose={() => setShowSettings(false)}
+          onShowShare={() => {
+            setShowSettings(false);
+            setShowShare(true);
+          }}
         />
+      )}
+
+      {showShare && (
+        <SharePage onClose={() => setShowShare(false)} />
       )}
 
       {timerSession && (

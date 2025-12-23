@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Settings as SettingsType, Subject, PlannedSession } from '../types';
+import { HelpSection } from './HelpSection';
 
 interface Props {
   settings: SettingsType;
@@ -7,6 +8,7 @@ interface Props {
   sessions: PlannedSession[];
   onSave: (settings: SettingsType) => void;
   onClose: () => void;
+  onShowShare: () => void;
 }
 
 function generateShareCode(): string {
@@ -15,7 +17,7 @@ function generateShareCode(): string {
 
 const DAYS = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
 
-export function Settings({ settings, subjects, sessions, onSave, onClose }: Props) {
+export function Settings({ settings, subjects, sessions, onSave, onClose, onShowShare }: Props) {
   const [copied, setCopied] = useState(false);
 
   // Bereken studiesnelheid per vak
@@ -44,8 +46,12 @@ export function Settings({ settings, subjects, sessions, onSave, onClose }: Prop
 
   const studyStats = getStudyStats();
 
-  const shareLink = settings.shareCode
-    ? `${window.location.origin}?mentor=${settings.shareCode}`
+  // Get student code from current URL path
+  const pathMatch = window.location.pathname.match(/\/student\/([^/]+)/);
+  const studentCode = pathMatch ? pathMatch[1] : '';
+
+  const shareLink = settings.shareCode && studentCode
+    ? `${window.location.origin}/student/${studentCode}/mentor?code=${settings.shareCode}`
     : null;
 
   const createShareLink = () => {
@@ -178,6 +184,18 @@ export function Settings({ settings, subjects, sessions, onSave, onClose }: Prop
             </div>
           )}
         </div>
+
+        <div className="settings-section">
+          <h3>App delen</h3>
+          <p className="section-info">
+            Deel StudiePlanner met je klasgenoten!
+          </p>
+          <button onClick={onShowShare} className="btn-secondary">
+            📲 QR Code & Link
+          </button>
+        </div>
+
+        <HelpSection />
 
         <button onClick={onClose} className="btn-primary">Sluiten</button>
       </div>

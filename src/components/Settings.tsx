@@ -17,8 +17,6 @@ interface Props {
   onImportHomework?: (homework: { vak: string; omschrijving: string }[]) => void;
 }
 
-const DAYS = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
-
 export function Settings({ settings, subjects, sessions, onSave, onClose, onShowShare, onImportTests: _onImportTests, onImportHomework: _onImportHomework }: Props) {
   // Tijdelijk unused - voor wanneer SchoolSystemSettings weer actief wordt
   void _onImportTests;
@@ -123,66 +121,10 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
     onSave({ ...settings, shareCode: undefined });
   };
 
-  const toggleBreakDay = (day: number) => {
-    const breakDays = settings.breakDays.includes(day)
-      ? settings.breakDays.filter(d => d !== day)
-      : [...settings.breakDays, day];
-    onSave({ ...settings, breakDays });
-  };
-
   return (
     <div className="settings-modal">
       <div className="settings-content">
         <h2>Instellingen</h2>
-
-        <div className="settings-section">
-          <h3>Leerling</h3>
-          <div className="form-group">
-            <label>Naam</label>
-            <input
-              type="text"
-              value={settings.studentName || ''}
-              onChange={e => onSave({ ...settings, studentName: e.target.value })}
-              placeholder="Jouw naam"
-            />
-          </div>
-        </div>
-
-        <div className="settings-section">
-          <h3>Studietijd</h3>
-          <div className="form-group">
-            <label>Minuten per dag</label>
-            <input
-              type="number"
-              value={settings.dailyStudyMinutes}
-              onChange={e => onSave({ ...settings, dailyStudyMinutes: parseInt(e.target.value) || 60 })}
-              min="15"
-              max="480"
-              step="15"
-            />
-            <small>{Math.floor(settings.dailyStudyMinutes / 60)}u {settings.dailyStudyMinutes % 60}m per dag</small>
-          </div>
-
-          <div className="form-group">
-            <label>Vrije dagen</label>
-            <div className="day-picker">
-              {DAYS.map((day, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  className={`day-btn ${settings.breakDays.includes(index) ? 'active' : ''}`}
-                  onClick={() => toggleBreakDay(index)}
-                >
-                  {day}
-                </button>
-              ))}
-            </div>
-            <div className="day-legend">
-              <span className="legend-item"><span className="legend-box study"></span> studiedag</span>
-              <span className="legend-item"><span className="legend-box free"></span> vrij</span>
-            </div>
-          </div>
-        </div>
 
         <div className="settings-section">
           <h3>Herinneringen</h3>

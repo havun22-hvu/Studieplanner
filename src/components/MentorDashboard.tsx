@@ -37,7 +37,6 @@ export function MentorDashboard() {
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
-  const contentRef = useRef<HTMLDivElement>(null);
 
   // Swipe between tabs
   const views: ('vakken' | 'agenda' | 'stats')[] = ['vakken', 'agenda', 'stats'];
@@ -277,14 +276,14 @@ export function MentorDashboard() {
 
       <div className="mentor-content">
         {/* Main content - student view */}
-        <main
-          className="mentor-main"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
+        <main className="mentor-main">
           {selectedStudent && studentData ? (
             <>
-              <div className="student-header">
+              <div
+                className="student-header"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+              >
                 <h2>{studentData.student.name}</h2>
                 <nav className="student-nav">
                   <button

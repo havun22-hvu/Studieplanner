@@ -174,6 +174,48 @@ class ApiService {
   async getSessionHistory() {
     return this.request<unknown[]>('/session/history');
   }
+
+  // Sync subjects to backend
+  async syncSubjects(subjects: Array<{
+    id: string;
+    name: string;
+    color: string;
+    examDate: string;
+    tasks: Array<{
+      id: string;
+      description: string;
+      estimatedMinutes: number;
+      plannedAmount: number;
+      unit: string;
+      completed: boolean;
+    }>;
+  }>) {
+    return this.request<{ message: string }>('/student/subjects/sync', {
+      method: 'POST',
+      body: JSON.stringify({ subjects }),
+    });
+  }
+
+  // Sync sessions to backend
+  async syncSessions(sessions: Array<{
+    id: string;
+    date: string;
+    taskId: string;
+    subjectId: string;
+    hour?: number;
+    minutesPlanned: number;
+    minutesActual?: number;
+    amountPlanned: number;
+    amountActual?: number;
+    unit: string;
+    completed: boolean;
+    knowledgeRating?: number;
+  }>) {
+    return this.request<{ message: string }>('/student/sessions/sync', {
+      method: 'POST',
+      body: JSON.stringify({ sessions }),
+    });
+  }
 }
 
 export const api = new ApiService();

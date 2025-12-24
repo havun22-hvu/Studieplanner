@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { usePWA } from '../contexts/PWAContext';
@@ -35,6 +35,21 @@ export function MentorDashboard() {
   const [showSettings, setShowSettings] = useState(false);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+        setShowSettings(false);
+      }
+    };
+
+    if (showSettings) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showSettings]);
 
   const handleCheckUpdate = async () => {
     setIsCheckingUpdate(true);
@@ -147,7 +162,7 @@ export function MentorDashboard() {
           <h1>Mentor Dashboard</h1>
           <span className="mentor-name">{user?.name}</span>
         </div>
-        <div className="settings-wrapper">
+        <div className="settings-wrapper" ref={settingsRef}>
           <button
             onClick={() => setShowSettings(!showSettings)}
             className="btn-settings"

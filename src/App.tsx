@@ -18,6 +18,7 @@ import type { CatchUpSuggestion } from './utils/planning';
 import { CatchUpModal } from './components/CatchUpModal';
 import { AuthScreen } from './components/AuthScreen';
 import { useAuth } from './contexts/AuthContext';
+import { api } from './services/api';
 import './App.css';
 
 type View = 'subjects' | 'planning' | 'stats';
@@ -112,6 +113,20 @@ function StudentApp() {
   const [subjects, setSubjects] = useLocalStorage<Subject[]>('studieplanner-subjects', []);
   const [sessions, setSessions] = useLocalStorage<PlannedSession[]>('studieplanner-sessions', []);
   const [settings, setSettings] = useLocalStorage<SettingsType>('studieplanner-settings', DEFAULT_SETTINGS);
+
+  // Sync subjects to backend when they change
+  useEffect(() => {
+    if (subjects.length > 0) {
+      api.syncSubjects(subjects).catch(err => console.error('Failed to sync subjects:', err));
+    }
+  }, [subjects]);
+
+  // Sync sessions to backend when they change
+  useEffect(() => {
+    if (sessions.length > 0) {
+      api.syncSessions(sessions).catch(err => console.error('Failed to sync sessions:', err));
+    }
+  }, [sessions]);
 
   const [view, setView] = useState<View>('subjects');
   const [showForm, setShowForm] = useState(false);

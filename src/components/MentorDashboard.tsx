@@ -28,6 +28,7 @@ export function MentorDashboard() {
   const [codeSuccess, setCodeSuccess] = useState('');
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'agenda' | 'stats'>('agenda');
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     loadStudents();
@@ -128,60 +129,67 @@ export function MentorDashboard() {
           <h1>Mentor Dashboard</h1>
           <span className="mentor-name">{user?.name}</span>
         </div>
-        <button onClick={logout} className="btn-logout">Uitloggen</button>
-      </header>
-
-      <div className="mentor-content">
-        {/* Sidebar met leerlingen */}
-        <aside className="mentor-sidebar">
-          <div className="sidebar-section">
-            <h3>Mijn Leerlingen</h3>
-            {students.length === 0 ? (
-              <p className="no-students">Nog geen leerlingen gekoppeld.</p>
-            ) : (
-              <ul className="student-list">
-                {students.map(student => (
-                  <li
-                    key={student.id}
-                    className={`student-item ${selectedStudent?.id === student.id ? 'active' : ''}`}
-                    onClick={() => setSelectedStudent(student)}
-                  >
-                    <span className="student-name">{student.name}</span>
-                    <button
-                      className="btn-remove-student"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeStudent(student.id);
-                      }}
-                    >
-                      ×
-                    </button>
-                  </li>
-                ))}
-              </ul>
+        <div className="mentor-header-right">
+          <div className="settings-wrapper">
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="btn-settings"
+              title="Instellingen"
+            >
+              ⚙️
+            </button>
+            {showSettings && (
+              <div className="settings-dropdown">
+                <h4>Leerling Toevoegen</h4>
+                <p className="section-hint">Vraag de leerling om een code te genereren.</p>
+                <div className="student-code-input">
+                  <input
+                    type="text"
+                    value={studentCode}
+                    onChange={e => setStudentCode(e.target.value.toUpperCase())}
+                    placeholder="Voer code in"
+                    maxLength={10}
+                  />
+                  <button onClick={handleAcceptStudent} className="btn-add-student">
+                    Toevoegen
+                  </button>
+                </div>
+                {codeError && <p className="error-message">{codeError}</p>}
+                {codeSuccess && <p className="success-message">{codeSuccess}</p>}
+              </div>
             )}
           </div>
+          <button onClick={logout} className="btn-logout">Uitloggen</button>
+        </div>
+      </header>
 
-          <div className="sidebar-section">
-            <h3>Leerling Toevoegen</h3>
-            <p className="section-hint">Vraag de leerling om een code te genereren.</p>
-            <div className="student-code-input">
-              <input
-                type="text"
-                value={studentCode}
-                onChange={e => setStudentCode(e.target.value.toUpperCase())}
-                placeholder="Voer code in"
-                maxLength={10}
-              />
-              <button onClick={handleAcceptStudent} className="btn-add-student">
-                Toevoegen
+      {/* Leerlingen tabs */}
+      <div className="student-tabs">
+        {students.length === 0 ? (
+          <p className="no-students">Nog geen leerlingen gekoppeld. Klik op ⚙️ om een leerling toe te voegen.</p>
+        ) : (
+          students.map(student => (
+            <div
+              key={student.id}
+              className={`student-tab ${selectedStudent?.id === student.id ? 'active' : ''}`}
+              onClick={() => setSelectedStudent(student)}
+            >
+              <span>{student.name}</span>
+              <button
+                className="btn-remove-student"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeStudent(student.id);
+                }}
+              >
+                ×
               </button>
             </div>
-            {codeError && <p className="error-message">{codeError}</p>}
-            {codeSuccess && <p className="success-message">{codeSuccess}</p>}
-          </div>
-        </aside>
+          ))
+        )}
+      </div>
 
+      <div className="mentor-content">
         {/* Main content - student view */}
         <main className="mentor-main">
           {selectedStudent && studentData ? (

@@ -23,6 +23,50 @@
   opacity: 0.9;
 }
 
+.mentor-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.settings-wrapper {
+  position: relative;
+}
+
+.btn-settings {
+  padding: 0.5rem;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.btn-settings:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.settings-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  padding: 1rem;
+  min-width: 280px;
+  z-index: 100;
+  color: #333;
+}
+
+.settings-dropdown h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+  color: #333;
+}
+
 .btn-logout {
   padding: 0.5rem 1rem;
   background: rgba(255,255,255,0.2);
@@ -36,89 +80,71 @@
   background: rgba(255,255,255,0.3);
 }
 
-.mentor-content {
+/* Student tabs */
+.student-tabs {
   display: flex;
-  flex: 1;
-}
-
-.mentor-sidebar {
-  width: 280px;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
   background: white;
-  border-right: 1px solid #e0e0e0;
-  padding: 1rem;
-  overflow-y: auto;
+  border-bottom: 1px solid #e0e0e0;
+  overflow-x: auto;
 }
 
-.sidebar-section {
-  margin-bottom: 1.5rem;
-}
-
-.sidebar-section h3 {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.no-students {
-  color: #999;
-  font-size: 0.9rem;
-}
-
-.student-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.student-item {
+.student-tab {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0.75rem;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
   background: #f5f5f5;
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.9rem;
 }
 
-.student-item:hover {
+.student-tab:hover {
   background: #e8e8e8;
 }
 
-.student-item.active {
+.student-tab.active {
   background: #667eea;
   color: white;
 }
 
-.student-name {
-  font-weight: 500;
-}
-
-.btn-remove-student {
-  width: 24px;
-  height: 24px;
+.student-tab .btn-remove-student {
+  width: 20px;
+  height: 20px;
   padding: 0;
   background: rgba(0,0,0,0.1);
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.85rem;
   line-height: 1;
   color: inherit;
   opacity: 0.7;
 }
 
-.btn-remove-student:hover {
+.student-tab .btn-remove-student:hover {
   opacity: 1;
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background: rgba(239, 68, 68, 0.3);
 }
 
-.student-item.active .btn-remove-student {
+.student-tab.active .btn-remove-student {
   background: rgba(255,255,255,0.2);
 }
+
+.student-tabs .no-students {
+  color: #999;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.mentor-content {
+  display: flex;
+  flex: 1;
+}
+
 
 .invite-code-box {
   background: #f0f7ff;
@@ -281,13 +307,15 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .mentor-content {
-    flex-direction: column;
+  .mentor-header {
+    padding: 0.75rem 1rem;
   }
 
-  .mentor-sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #e0e0e0;
+  .mentor-header-left h1 {
+    font-size: 1rem;
+  }
+
+  .student-tabs {
+    padding: 0.5rem 1rem;
   }
 }

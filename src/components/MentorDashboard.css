@@ -387,96 +387,63 @@
   background: white;
   border-radius: 8px;
   border-left: 4px solid;
-  padding: 1rem;
+  padding: 0.75rem;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .subject-header-mentor {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
 .subject-header-mentor h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .exam-date {
-  font-size: 0.8rem;
-  color: #666;
-  background: #f5f5f5;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #888;
 }
 
-.subject-progress {
+.subject-stats-row {
   display: flex;
   gap: 1rem;
-  padding: 0.75rem;
-  background: #f8f9fa;
-  border-radius: 6px;
-  margin-bottom: 1rem;
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 0.5rem;
 }
 
-.progress-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-}
-
-.stat-label {
-  font-size: 0.7rem;
-  color: #888;
-  text-transform: uppercase;
-}
-
-.stat-value {
-  font-size: 1rem;
-  font-weight: 600;
+.stat-item strong {
   color: #333;
 }
 
-.stat-value.rating-good {
+.stat-item.rating-good {
   color: #22c55e;
 }
 
-.stat-value.rating-ok {
+.stat-item.rating-ok {
   color: #eab308;
 }
 
-.stat-value.rating-low {
+.stat-item.rating-low {
   color: #ef4444;
 }
 
-.tasks-list-mentor h4 {
-  font-size: 0.85rem;
-  color: #666;
-  margin: 0 0 0.5rem 0;
-  text-transform: uppercase;
-}
-
-.task-item-mentor {
+.tasks-list-compact {
   display: flex;
-  justify-content: space-between;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #eee;
-  font-size: 0.9rem;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
-.task-item-mentor:last-child {
-  border-bottom: none;
-}
-
-.task-desc {
-  color: #333;
-}
-
-.task-progress {
-  color: #888;
-  font-size: 0.8rem;
+.task-tag {
+  font-size: 0.7rem;
+  background: #f0f0f0;
+  padding: 0.2rem 0.5rem;
+  border-radius: 10px;
+  color: #555;
 }
 
 /* Responsive */

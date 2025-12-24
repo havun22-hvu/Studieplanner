@@ -304,46 +304,34 @@ export function MentorDashboard() {
                         ? completedSessions.reduce((sum, s) => sum + (s.knowledgeRating || 0), 0) / completedSessions.filter(s => s.knowledgeRating).length
                         : null;
 
+                      // Format time: show minutes if < 60, otherwise hours
+                      const formatTime = (mins: number) => mins < 60 ? `${mins}min` : `${Math.round(mins / 60)}uur`;
+
                       return (
                         <div key={subject.id} className="subject-card-mentor" style={{ borderLeftColor: subject.color }}>
                           <div className="subject-header-mentor">
                             <h3>{subject.name}</h3>
-                            <span className="exam-date">Toets: {new Date(subject.examDate).toLocaleDateString('nl-NL')}</span>
+                            <span className="exam-date">{new Date(subject.examDate).toLocaleDateString('nl-NL')}</span>
                           </div>
 
-                          <div className="subject-progress">
-                            <div className="progress-stat">
-                              <span className="stat-label">Sessies</span>
-                              <span className="stat-value">{completedSessions.length}/{subjectSessions.length}</span>
-                            </div>
-                            <div className="progress-stat">
-                              <span className="stat-label">Tijd</span>
-                              <span className="stat-value">{Math.round(totalActual / 60)}u / {Math.round(totalPlanned / 60)}u</span>
-                            </div>
+                          <div className="subject-stats-row">
+                            <span className="stat-item">
+                              <strong>{completedSessions.length}</strong>/{subjectSessions.length} klaar
+                            </span>
+                            <span className="stat-item">
+                              <strong>{formatTime(totalActual)}</strong> van {formatTime(totalPlanned)}
+                            </span>
                             {avgRating && (
-                              <div className="progress-stat">
-                                <span className="stat-label">Gem. cijfer</span>
-                                <span className={`stat-value rating-${avgRating >= 7 ? 'good' : avgRating >= 5 ? 'ok' : 'low'}`}>
-                                  {avgRating.toFixed(1)}
-                                </span>
-                              </div>
+                              <span className={`stat-item rating-${avgRating >= 7 ? 'good' : avgRating >= 5 ? 'ok' : 'low'}`}>
+                                ⭐ {avgRating.toFixed(1)}
+                              </span>
                             )}
                           </div>
 
-                          <div className="tasks-list-mentor">
-                            <h4>Taken</h4>
-                            {subject.tasks.map(task => {
-                              const taskSessions = subjectSessions.filter(s => s.taskId === task.id);
-                              const taskCompleted = taskSessions.filter(s => s.completed);
-                              return (
-                                <div key={task.id} className="task-item-mentor">
-                                  <span className="task-desc">{task.description}</span>
-                                  <span className="task-progress">
-                                    {taskCompleted.length}/{taskSessions.length} sessies
-                                  </span>
-                                </div>
-                              );
-                            })}
+                          <div className="tasks-list-compact">
+                            {subject.tasks.map(task => (
+                              <span key={task.id} className="task-tag">{task.description}</span>
+                            ))}
                           </div>
                         </div>
                       );

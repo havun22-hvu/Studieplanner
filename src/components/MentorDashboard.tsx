@@ -56,9 +56,12 @@ export function MentorDashboard() {
     setUpdateMessage(null);
     try {
       await checkForUpdate();
-      setUpdateMessage(`Je hebt de laatste versie (${APP_VERSION})`);
-      setTimeout(() => setUpdateMessage(null), 5000);
-    } finally {
+      // Force reload to get latest version
+      setUpdateMessage('App wordt herladen...');
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    } catch {
       setIsCheckingUpdate(false);
     }
   };

@@ -1427,9 +1427,9 @@ body {
 .settings-header {
   position: sticky;
   top: 0;
-  background: var(--card);
-  padding: 1rem 0;
-  margin-bottom: 1rem;
+  background: var(--background, #f5f5f5);
+  padding: 1rem;
+  margin: 0 -1.5rem 1rem -1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;

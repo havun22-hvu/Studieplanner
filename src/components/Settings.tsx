@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Settings as SettingsType } from '../types';
 import { usePWA } from '../contexts/PWAContext';
 import { useNotifications } from '../hooks/useNotifications';
+import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 
 const APP_VERSION = '2.8.2';
@@ -15,6 +16,7 @@ interface Props {
 export function Settings({ settings, onSave, onClose }: Props) {
   const { canInstall, isInstalled, install, checkForUpdate, lastUpdateCheck } = usePWA();
   const { permission, requestPermission, isSupported } = useNotifications(settings);
+  const { logout } = useAuth();
 
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [inviteCopied, setInviteCopied] = useState(false);
@@ -206,6 +208,13 @@ export function Settings({ settings, onSave, onClose }: Props) {
         <div className="settings-section settings-disabled">
           <h3>Schoolsysteem</h3>
           <p className="muted-text">SOMtoday en Magister koppeling komt binnenkort.</p>
+        </div>
+
+        {/* Uitloggen */}
+        <div className="settings-section">
+          <button onClick={logout} className="btn-logout-full">
+            Uitloggen
+          </button>
         </div>
       </div>
     </div>

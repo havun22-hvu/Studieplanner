@@ -33,7 +33,6 @@ export function SessionResultModal({ session, subject, task, initialMinutes, onS
     ? Math.round(((minutesSpent - session.minutesPlanned) / session.minutesPlanned) * 100)
     : 0;
   const isFaster = timeDiffPercent < 0;
-  const isSlower = timeDiffPercent > 0;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

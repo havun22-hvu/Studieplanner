@@ -735,18 +735,18 @@ body {
 }
 
 .btn-logout-full {
-  background: var(--danger, #ef4444);
-  color: white;
+  background: var(--border);
+  color: var(--text-muted);
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   cursor: pointer;
   width: 100%;
 }
 
 .btn-logout-full:hover {
-  background: #dc2626;
+  background: var(--background);
 }
 
 .btn-icon {

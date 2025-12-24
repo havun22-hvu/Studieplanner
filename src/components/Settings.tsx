@@ -36,10 +36,10 @@ export function Settings({ settings, subjects, sessions, onSave, onClose }: Prop
     setIsSyncing(true);
     setSyncMessage(null);
     try {
-      await Promise.all([
-        api.syncSubjects(subjects),
-        api.syncSessions(sessions),
-      ]);
+      // First sync subjects to create ID mappings in backend cache
+      await api.syncSubjects(subjects);
+      // Then sync sessions using those mappings
+      await api.syncSessions(sessions);
       setSyncMessage('Data gesynchroniseerd!');
       setTimeout(() => setSyncMessage(null), 3000);
     } catch (err) {

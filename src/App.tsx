@@ -114,19 +114,23 @@ function StudentApp() {
   const [sessions, setSessions] = useLocalStorage<PlannedSession[]>('studieplanner-sessions', []);
   const [settings, setSettings] = useLocalStorage<SettingsType>('studieplanner-settings', DEFAULT_SETTINGS);
 
-  // Sync subjects to backend when they change
+  // Sync subjects and sessions to backend when they change
+  // Sessions sync MUST wait for subjects sync to complete (for ID mappings)
   useEffect(() => {
-    if (subjects.length > 0) {
-      api.syncSubjects(subjects).catch(err => console.error('Failed to sync subjects:', err));
-    }
-  }, [subjects]);
-
-  // Sync sessions to backend when they change
-  useEffect(() => {
-    if (sessions.length > 0) {
-      api.syncSessions(sessions).catch(err => console.error('Failed to sync sessions:', err));
-    }
-  }, [sessions]);
+    const syncToBackend = async () => {
+      try {
+        if (subjects.length > 0) {
+          await api.syncSubjects(subjects);
+        }
+        if (sessions.length > 0) {
+          await api.syncSessions(sessions);
+        }
+      } catch (err) {
+        console.error('Failed to sync:', err);
+      }
+    };
+    syncToBackend();
+  }, [subjects, sessions]);
 
   const [view, setView] = useState<View>('subjects');
   const [showForm, setShowForm] = useState(false);

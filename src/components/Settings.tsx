@@ -5,8 +5,6 @@ import { useNotifications } from '../hooks/useNotifications';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 
-const APP_VERSION = '2.8.3';
-
 interface Props {
   settings: SettingsType;
   subjects: Subject[];

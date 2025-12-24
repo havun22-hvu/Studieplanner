@@ -1608,6 +1608,12 @@ body {
   font-size: 0.85rem;
 }
 
+.success-text {
+  color: var(--success, #22c55e);
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0 0;
+}
+
 /* Disabled section */
 .settings-disabled {
   opacity: 0.6;
@@ -2709,9 +2715,12 @@ body {
 }
 
 .toggle-label input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  flex-shrink: 0;
   accent-color: var(--primary);
+  margin: 0 0.5rem 0 0;
 }
 
 .toggle-label span {

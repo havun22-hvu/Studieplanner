@@ -4,6 +4,8 @@ import { usePWA } from '../contexts/PWAContext';
 import { useNotifications } from '../hooks/useNotifications';
 import { api } from '../services/api';
 
+const APP_VERSION = '2.8.2';
+
 interface Props {
   settings: SettingsType;
   onSave: (settings: SettingsType) => void;
@@ -18,6 +20,7 @@ export function Settings({ settings, onSave, onClose }: Props) {
   const [inviteCopied, setInviteCopied] = useState(false);
   const [mentors, setMentors] = useState<Array<{ id: number; name: string }>>([]);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
 
   useEffect(() => {
     loadMentors();
@@ -51,8 +54,11 @@ export function Settings({ settings, onSave, onClose }: Props) {
 
   const handleCheckUpdate = async () => {
     setIsCheckingUpdate(true);
+    setUpdateMessage(null);
     try {
       await checkForUpdate();
+      setUpdateMessage(`Je hebt de laatste versie (${APP_VERSION})`);
+      setTimeout(() => setUpdateMessage(null), 5000);
     } finally {
       setIsCheckingUpdate(false);
     }
@@ -190,6 +196,9 @@ export function Settings({ settings, onSave, onClose }: Props) {
           </div>
           {lastUpdateCheck && (
             <p className="muted-text">Laatst gecontroleerd: {lastUpdateCheck.toLocaleTimeString()}</p>
+          )}
+          {updateMessage && (
+            <p className="success-text">{updateMessage}</p>
           )}
         </div>
 

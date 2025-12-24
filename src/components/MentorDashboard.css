@@ -67,6 +67,57 @@
   color: #333;
 }
 
+.dropdown-section {
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.dropdown-section:last-child {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.dropdown-about .app-version {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0 0 0.75rem 0;
+}
+
+.btn-check-update {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-check-update:hover {
+  background: #5a6fd6;
+}
+
+.btn-check-update:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dropdown-about .muted-text {
+  font-size: 0.75rem;
+  color: #999;
+  margin: 0.5rem 0 0 0;
+}
+
+.dropdown-about .copyright {
+  font-size: 0.75rem;
+  color: #999;
+  margin: 0.75rem 0 0 0;
+  text-align: center;
+}
+
 .btn-logout {
   padding: 0.5rem 1rem;
   background: rgba(255,255,255,0.2);
@@ -303,6 +354,115 @@
   height: 100vh;
   font-size: 1.25rem;
   color: #666;
+}
+
+/* Subjects/Vakken view */
+.subjects-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.no-data {
+  color: #999;
+  text-align: center;
+  padding: 2rem;
+}
+
+.subject-card-mentor {
+  background: white;
+  border-radius: 8px;
+  border-left: 4px solid;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.subject-header-mentor {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.subject-header-mentor h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.exam-date {
+  font-size: 0.8rem;
+  color: #666;
+  background: #f5f5f5;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.subject-progress {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.progress-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.stat-value.rating-good {
+  color: #22c55e;
+}
+
+.stat-value.rating-ok {
+  color: #eab308;
+}
+
+.stat-value.rating-low {
+  color: #ef4444;
+}
+
+.tasks-list-mentor h4 {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+}
+
+.task-item-mentor {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
+}
+
+.task-item-mentor:last-child {
+  border-bottom: none;
+}
+
+.task-desc {
+  color: #333;
+}
+
+.task-progress {
+  color: #888;
+  font-size: 0.8rem;
 }
 
 /* Responsive */

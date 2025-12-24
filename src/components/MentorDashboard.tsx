@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { usePWA } from '../contexts/PWAContext';
 import type { Subject, PlannedSession } from '../types';
 import { AgendaView } from './AgendaView';
 import { StatsView } from './StatsView';
 import './MentorDashboard.css';
+
+const APP_VERSION = '2.8.2';
 
 interface Student {
   id: number;
@@ -20,6 +23,7 @@ interface StudentData {
 
 export function MentorDashboard() {
   const { user, logout } = useAuth();
+  const { checkForUpdate, lastUpdateCheck } = usePWA();
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [studentData, setStudentData] = useState<StudentData | null>(null);
@@ -27,8 +31,22 @@ export function MentorDashboard() {
   const [codeError, setCodeError] = useState('');
   const [codeSuccess, setCodeSuccess] = useState('');
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<'agenda' | 'stats'>('agenda');
+  const [view, setView] = useState<'agenda' | 'vakken' | 'stats'>('agenda');
   const [showSettings, setShowSettings] = useState(false);
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+
+  const handleCheckUpdate = async () => {
+    setIsCheckingUpdate(true);
+    setUpdateMessage(null);
+    try {
+      await checkForUpdate();
+      setUpdateMessage(`Je hebt de laatste versie (${APP_VERSION})`);
+      setTimeout(() => setUpdateMessage(null), 5000);
+    } finally {
+      setIsCheckingUpdate(false);
+    }
+  };
 
   useEffect(() => {
     loadStudents();
@@ -140,22 +158,41 @@ export function MentorDashboard() {
             </button>
             {showSettings && (
               <div className="settings-dropdown">
-                <h4>Leerling Toevoegen</h4>
-                <p className="section-hint">Vraag de leerling om een code te genereren.</p>
-                <div className="student-code-input">
-                  <input
-                    type="text"
-                    value={studentCode}
-                    onChange={e => setStudentCode(e.target.value.toUpperCase())}
-                    placeholder="Voer code in"
-                    maxLength={10}
-                  />
-                  <button onClick={handleAcceptStudent} className="btn-add-student">
-                    Toevoegen
-                  </button>
+                <div className="dropdown-section">
+                  <h4>Leerling Toevoegen</h4>
+                  <p className="section-hint">Vraag de leerling om een code te genereren.</p>
+                  <div className="student-code-input">
+                    <input
+                      type="text"
+                      value={studentCode}
+                      onChange={e => setStudentCode(e.target.value.toUpperCase())}
+                      placeholder="Voer code in"
+                      maxLength={10}
+                    />
+                    <button onClick={handleAcceptStudent} className="btn-add-student">
+                      Toevoegen
+                    </button>
+                  </div>
+                  {codeError && <p className="error-message">{codeError}</p>}
+                  {codeSuccess && <p className="success-message">{codeSuccess}</p>}
                 </div>
-                {codeError && <p className="error-message">{codeError}</p>}
-                {codeSuccess && <p className="success-message">{codeSuccess}</p>}
+
+                <div className="dropdown-section dropdown-about">
+                  <h4>Over StudiePlanner</h4>
+                  <p className="app-version">Versie {APP_VERSION}</p>
+                  <button
+                    onClick={handleCheckUpdate}
+                    className="btn-check-update"
+                    disabled={isCheckingUpdate}
+                  >
+                    {isCheckingUpdate ? 'Controleren...' : 'Controleer op updates'}
+                  </button>
+                  {updateMessage && <p className="success-message">{updateMessage}</p>}
+                  {lastUpdateCheck && (
+                    <p className="muted-text">Laatst: {lastUpdateCheck.toLocaleTimeString()}</p>
+                  )}
+                  <p className="copyright">© {new Date().getFullYear()} Havun</p>
+                </div>
               </div>
             )}
           </div>
@@ -204,6 +241,12 @@ export function MentorDashboard() {
                     Agenda
                   </button>
                   <button
+                    className={view === 'vakken' ? 'active' : ''}
+                    onClick={() => setView('vakken')}
+                  >
+                    Vakken
+                  </button>
+                  <button
                     className={view === 'stats' ? 'active' : ''}
                     onClick={() => setView('stats')}
                   >
@@ -222,6 +265,68 @@ export function MentorDashboard() {
                   onToggleAlarm={() => {}}
                   readOnly={true}
                 />
+              )}
+
+              {view === 'vakken' && (
+                <div className="subjects-view">
+                  {studentData.subjects.length === 0 ? (
+                    <p className="no-data">Geen vakken gevonden.</p>
+                  ) : (
+                    studentData.subjects.map(subject => {
+                      const subjectSessions = studentData.sessions.filter(s => s.subjectId === subject.id);
+                      const completedSessions = subjectSessions.filter(s => s.completed);
+                      const totalPlanned = subjectSessions.reduce((sum, s) => sum + s.minutesPlanned, 0);
+                      const totalActual = completedSessions.reduce((sum, s) => sum + (s.minutesActual || 0), 0);
+                      const avgRating = completedSessions.length > 0
+                        ? completedSessions.reduce((sum, s) => sum + (s.knowledgeRating || 0), 0) / completedSessions.filter(s => s.knowledgeRating).length
+                        : null;
+
+                      return (
+                        <div key={subject.id} className="subject-card-mentor" style={{ borderLeftColor: subject.color }}>
+                          <div className="subject-header-mentor">
+                            <h3>{subject.name}</h3>
+                            <span className="exam-date">Toets: {new Date(subject.examDate).toLocaleDateString('nl-NL')}</span>
+                          </div>
+
+                          <div className="subject-progress">
+                            <div className="progress-stat">
+                              <span className="stat-label">Sessies</span>
+                              <span className="stat-value">{completedSessions.length}/{subjectSessions.length}</span>
+                            </div>
+                            <div className="progress-stat">
+                              <span className="stat-label">Tijd</span>
+                              <span className="stat-value">{Math.round(totalActual / 60)}u / {Math.round(totalPlanned / 60)}u</span>
+                            </div>
+                            {avgRating && (
+                              <div className="progress-stat">
+                                <span className="stat-label">Gem. cijfer</span>
+                                <span className={`stat-value rating-${avgRating >= 7 ? 'good' : avgRating >= 5 ? 'ok' : 'low'}`}>
+                                  {avgRating.toFixed(1)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="tasks-list-mentor">
+                            <h4>Taken</h4>
+                            {subject.tasks.map(task => {
+                              const taskSessions = subjectSessions.filter(s => s.taskId === task.id);
+                              const taskCompleted = taskSessions.filter(s => s.completed);
+                              return (
+                                <div key={task.id} className="task-item-mentor">
+                                  <span className="task-desc">{task.description}</span>
+                                  <span className="task-progress">
+                                    {taskCompleted.length}/{taskSessions.length} sessies
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               )}
 
               {view === 'stats' && (

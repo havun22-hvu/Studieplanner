@@ -11,9 +11,10 @@ interface Props {
   readOnly?: boolean;
 }
 
-// Time slots from 8:00 to 20:00
-const HOURS = Array.from({ length: 13 }, (_, i) => i + 8);
+// Time slots 0:00 to 23:00 (full 24 hours)
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const HOUR_HEIGHT = 60; // pixels per hour
+const DEFAULT_SCROLL_HOUR = 8; // Scroll to 8:00 by default
 const PIXELS_PER_MINUTE = HOUR_HEIGHT / 60; // 1 pixel per minute
 
 interface DragItem {
@@ -38,6 +39,13 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
   const [dragItem, setDragItem] = useState<DragItem | null>(null);
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const gridRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to default hour (8:00) on mount
+  useEffect(() => {
+    if (gridRef.current) {
+      gridRef.current.scrollTop = DEFAULT_SCROLL_HOUR * HOUR_HEIGHT;
+    }
+  }, []);
 
   // Get week days
   const getWeekDays = (startDate: Date): Date[] => {
@@ -329,7 +337,7 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
                 const task = getTask(session.subjectId, session.taskId);
                 const height = Math.max(20, session.minutesPlanned * PIXELS_PER_MINUTE);
                 const showTask = height > 30;
-                const topOffset = ((session.hour || 8) - 8) * HOUR_HEIGHT;
+                const topOffset = (session.hour ?? 8) * HOUR_HEIGHT;
                 const hasAlarm = session.alarm?.enabled;
 
                 return (

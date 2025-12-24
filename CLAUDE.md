@@ -159,8 +159,13 @@ interface PlannedSession {
   taskId: string;
   subjectId: string;
   minutesPlanned: number;
-  hour?: number;        // undefined = op plank
+  minutesActual?: number;
+  amountPlanned: number;
+  amountActual?: number;
+  unit: string;           // 'blz' | 'opdrachten' | 'min video'
+  hour?: number;          // undefined/null = op plank
   completed: boolean;
+  knowledgeRating?: number; // 1-10, na sessie
   alarm?: SessionAlarm;
 }
 
@@ -224,6 +229,15 @@ npm run build
 - [x] Mentor secties samengevoegd (alleen invite code systeem)
 - [x] QR code/delen verplaatst naar About modal
 - [x] Agenda uitgebreid naar 24 uur (0:00-23:00), scrollt naar 8:00
+- [x] 'min video' als taak-eenheid naast blz en opdrachten
+- [x] Kennisbeoordeling (1-10) na sessie voltooien
+- [x] % sneller/langzamer indicator in voltooide blokken
+- [x] Auto-sync subjects en sessions naar backend bij elke wijziging
+- [x] Handmatige Sync knop in leerling-instellingen
+- [x] Mentor dashboard: leerlingen als horizontale tabs
+- [x] Mentor dashboard: instellingen dropdown (toevoegen, about, logout)
+- [x] Mentor dashboard: compacte vakken-view met taken als tags
+- [x] Update knop herlaadt app direct (PWA fix)
 
 **Uitgeschakeld (wacht op werkende API):**
 - [ ] SOMtoday integratie (code aanwezig in SchoolSystemSettings.tsx)
@@ -280,10 +294,17 @@ GET  /api/session/history → sessie geschiedenis
 ### Mentor API Endpoints
 ```
 GET  /api/mentor/students           → lijst van gekoppelde leerlingen
-GET  /api/mentor/student/{id}/data  → volledige data van leerling (subjects, tasks, sessions)
-POST /api/mentor/invite             → genereer uitnodigingscode (24u geldig)
-POST /api/mentor/accept-invite      → leerling accepteert invite (via code)
+GET  /api/mentor/student/{id}       → volledige data van leerling (subjects, tasks, sessions)
+POST /api/mentor/accept-student     → accepteer leerling via invite code
 DELETE /api/mentor/student/{id}     → ontkoppel leerling
+```
+
+### Student API Endpoints
+```
+POST /api/student/subjects/sync     → sync alle subjects + tasks naar backend
+POST /api/student/sessions/sync     → sync alle sessions naar backend
+POST /api/student/invite            → genereer invite code voor mentor (24u geldig)
+GET  /api/student/mentors           → lijst van gekoppelde mentoren
 ```
 
 ### Database Tabellen
@@ -291,9 +312,17 @@ DELETE /api/mentor/student/{id}     → ontkoppel leerling
 users: id, name, pincode, role (student/mentor), student_code (UUID 12 chars)
 mentor_students: mentor_id, student_id (pivot tabel)
 subjects: id, user_id, name, color, exam_date
-tasks: id, subject_id, description, estimated_minutes, amount_type, amount_total
-planned_sessions: id, task_id, date, hour, minutes_planned, completed, amount_actual, minutes_actual
+tasks: id, subject_id, description, estimated_minutes, planned_amount, unit, completed
+planned_sessions: id, user_id, subject_id, task_id, date, hour, minutes_planned, minutes_actual,
+                  amount_planned, amount_actual, unit, completed, knowledge_rating
 ```
+
+### Data Sync
+Frontend slaat data op in localStorage én synct naar backend:
+- **Auto-sync**: Bij elke wijziging aan subjects/sessions
+- **Handmatige sync**: Via Sync knop in instellingen
+- **Volgorde**: Subjects EERST (maakt ID mappings), daarna sessions
+- **ID Mapping**: Frontend gebruikt UUIDs, backend numerieke IDs. Mapping via Laravel cache (5 min TTL)
 
 ### Starten
 ```bash

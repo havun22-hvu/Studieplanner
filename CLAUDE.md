@@ -238,6 +238,8 @@ npm run build
 - [x] Mentor dashboard: instellingen dropdown (toevoegen, about, logout)
 - [x] Mentor dashboard: compacte vakken-view met taken als tags
 - [x] Update knop herlaadt app direct (PWA fix)
+- [x] Mentor vakken: taakdetails tonen (hoeveelheid, eenheid, tijd)
+- [x] Swipe navigatie tussen Vakken/Agenda/Stats (op header)
 
 **Uitgeschakeld (wacht op werkende API):**
 - [ ] SOMtoday integratie (code aanwezig in SchoolSystemSettings.tsx)

@@ -36,6 +36,32 @@ export function MentorDashboard() {
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number>(0);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Swipe between tabs
+  const views: ('vakken' | 'agenda' | 'stats')[] = ['vakken', 'agenda', 'stats'];
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+    const minSwipe = 50;
+
+    if (Math.abs(diff) < minSwipe) return;
+
+    const currentIndex = views.indexOf(view);
+    if (diff > 0 && currentIndex < views.length - 1) {
+      // Swipe left → next tab
+      setView(views[currentIndex + 1]);
+    } else if (diff < 0 && currentIndex > 0) {
+      // Swipe right → previous tab
+      setView(views[currentIndex - 1]);
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -251,7 +277,11 @@ export function MentorDashboard() {
 
       <div className="mentor-content">
         {/* Main content - student view */}
-        <main className="mentor-main">
+        <main
+          className="mentor-main"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           {selectedStudent && studentData ? (
             <>
               <div className="student-header">

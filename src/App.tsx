@@ -661,6 +661,8 @@ function StudentApp() {
       {showSettings && (
         <Settings
           settings={settings}
+          subjects={subjects}
+          sessions={sessions}
           onSave={(newSettings) => {
             setSettings(newSettings);
             regeneratePlanning();

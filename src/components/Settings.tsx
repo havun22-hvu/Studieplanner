@@ -1,19 +1,21 @@
 import { useState, useEffect } from 'react';
-import type { Settings as SettingsType } from '../types';
+import type { Settings as SettingsType, Subject, PlannedSession } from '../types';
 import { usePWA } from '../contexts/PWAContext';
 import { useNotifications } from '../hooks/useNotifications';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 
-const APP_VERSION = '2.8.2';
+const APP_VERSION = '2.8.3';
 
 interface Props {
   settings: SettingsType;
+  subjects: Subject[];
+  sessions: PlannedSession[];
   onSave: (settings: SettingsType) => void;
   onClose: () => void;
 }
 
-export function Settings({ settings, onSave, onClose }: Props) {
+export function Settings({ settings, subjects, sessions, onSave, onClose }: Props) {
   const { canInstall, isInstalled, install, checkForUpdate, lastUpdateCheck } = usePWA();
   const { permission, requestPermission, isSupported } = useNotifications(settings);
   const { logout } = useAuth();
@@ -23,10 +25,30 @@ export function Settings({ settings, onSave, onClose }: Props) {
   const [mentors, setMentors] = useState<Array<{ id: number; name: string }>>([]);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
   useEffect(() => {
     loadMentors();
   }, []);
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    setSyncMessage(null);
+    try {
+      await Promise.all([
+        api.syncSubjects(subjects),
+        api.syncSessions(sessions),
+      ]);
+      setSyncMessage('Data gesynchroniseerd!');
+      setTimeout(() => setSyncMessage(null), 3000);
+    } catch (err) {
+      setSyncMessage('Sync mislukt, probeer opnieuw');
+      console.error('Sync failed:', err);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const loadMentors = async () => {
     try {
@@ -189,6 +211,13 @@ export function Settings({ settings, onSave, onClose }: Props) {
             )}
             {isInstalled && <span className="status-badge">Geïnstalleerd</span>}
             <button
+              onClick={handleSync}
+              className="btn-secondary"
+              disabled={isSyncing}
+            >
+              {isSyncing ? 'Syncen...' : 'Sync'}
+            </button>
+            <button
               onClick={handleCheckUpdate}
               className="btn-secondary"
               disabled={isCheckingUpdate}
@@ -196,6 +225,9 @@ export function Settings({ settings, onSave, onClose }: Props) {
               {isCheckingUpdate ? 'Controleren...' : 'Updates'}
             </button>
           </div>
+          {syncMessage && (
+            <p className="success-text">{syncMessage}</p>
+          )}
           {lastUpdateCheck && (
             <p className="muted-text">Laatst gecontroleerd: {lastUpdateCheck.toLocaleTimeString()}</p>
           )}

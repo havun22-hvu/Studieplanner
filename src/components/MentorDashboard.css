@@ -434,16 +434,29 @@
 
 .tasks-list-compact {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
 }
 
-.task-tag {
-  font-size: 0.7rem;
-  background: #f0f0f0;
-  padding: 0.2rem 0.5rem;
-  border-radius: 10px;
-  color: #555;
+.task-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.task-row:last-child {
+  border-bottom: none;
+}
+
+.task-name {
+  color: #444;
+}
+
+.task-meta {
+  color: #888;
+  white-space: nowrap;
 }
 
 /* Responsive */

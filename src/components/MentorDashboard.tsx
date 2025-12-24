@@ -330,7 +330,12 @@ export function MentorDashboard() {
 
                           <div className="tasks-list-compact">
                             {subject.tasks.map(task => (
-                              <span key={task.id} className="task-tag">{task.description}</span>
+                              <div key={task.id} className="task-row">
+                                <span className="task-name">{task.description}</span>
+                                <span className="task-meta">
+                                  {task.plannedAmount} {task.unit} · {task.estimatedMinutes}min
+                                </span>
+                              </div>
                             ))}
                           </div>
                         </div>

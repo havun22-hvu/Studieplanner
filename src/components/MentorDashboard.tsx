@@ -95,6 +95,8 @@ export function MentorDashboard() {
         student: data.student,
         subjects: data.subjects.map(s => ({
           ...s,
+          id: String(s.id),
+          examDate: s.examDate,
           tasks: s.tasks.map(t => ({
             ...t,
             id: String(t.id),

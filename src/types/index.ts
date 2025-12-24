@@ -54,6 +54,7 @@ export interface PlannedSession {
   completed: boolean;
   hour?: number; // Start hour (8-20), undefined = not yet scheduled to specific time
   alarm?: SessionAlarm;
+  knowledgeRating?: number; // 1-10 geschatte kennisopname na overhoring
 }
 
 // Result of a completed session

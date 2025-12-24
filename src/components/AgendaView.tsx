@@ -337,8 +337,14 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
                 const task = getTask(session.subjectId, session.taskId);
                 const height = Math.max(20, session.minutesPlanned * PIXELS_PER_MINUTE);
                 const showTask = height > 30;
+                const showStats = height > 50 && session.completed && session.minutesActual;
                 const topOffset = (session.hour ?? 8) * HOUR_HEIGHT;
                 const hasAlarm = session.alarm?.enabled;
+
+                // Calculate time difference for completed sessions
+                const timeDiffPercent = session.completed && session.minutesActual && session.minutesPlanned > 0
+                  ? Math.round(((session.minutesActual - session.minutesPlanned) / session.minutesPlanned) * 100)
+                  : 0;
 
                 return (
                   <div
@@ -360,7 +366,7 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
                   >
                     <div className="chip-header">
                       <span className="chip-subject">{subject?.name}</span>
-                      {!readOnly && (
+                      {!readOnly && !session.completed && (
                         <button
                           className={`alarm-btn ${hasAlarm ? 'active' : ''}`}
                           onClick={(e) => {
@@ -373,6 +379,20 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
                       )}
                     </div>
                     {showTask && <span className="chip-task">{task?.description}</span>}
+                    {showStats && (
+                      <div className="chip-stats">
+                        <span className={`chip-time-diff ${timeDiffPercent < 0 ? 'faster' : timeDiffPercent > 0 ? 'slower' : ''}`}>
+                          {timeDiffPercent !== 0 && (
+                            <>{timeDiffPercent < 0 ? '⚡' : '🐢'} {Math.abs(timeDiffPercent)}%</>
+                          )}
+                        </span>
+                        {session.knowledgeRating && (
+                          <span className={`chip-rating rating-${session.knowledgeRating >= 7 ? 'good' : session.knowledgeRating >= 5 ? 'ok' : 'low'}`}>
+                            {session.knowledgeRating}/10
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}

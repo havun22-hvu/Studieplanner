@@ -16,15 +16,24 @@ export interface SessionResultData {
   amountCompleted: number;
   needsMoreTime: boolean;
   remainingAmount: number; // hoeveel nog te doen
+  knowledgeRating?: number; // 1-10 geschatte kennisopname
 }
 
 export function SessionResultModal({ session, subject, task, initialMinutes, onSave, onCancel }: Props) {
   const [minutesSpent, setMinutesSpent] = useState(initialMinutes || session.minutesPlanned);
   const [amountCompleted, setAmountCompleted] = useState(session.amountPlanned);
+  const [knowledgeRating, setKnowledgeRating] = useState<number>(7);
 
   const remainingAmount = Math.max(0, session.amountPlanned - amountCompleted);
   const completedAll = amountCompleted >= session.amountPlanned;
   const completedMore = amountCompleted > session.amountPlanned;
+
+  // Calculate time difference percentage
+  const timeDiffPercent = session.minutesPlanned > 0
+    ? Math.round(((minutesSpent - session.minutesPlanned) / session.minutesPlanned) * 100)
+    : 0;
+  const isFaster = timeDiffPercent < 0;
+  const isSlower = timeDiffPercent > 0;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +43,7 @@ export function SessionResultModal({ session, subject, task, initialMinutes, onS
       amountCompleted,
       needsMoreTime: !completedAll,
       remainingAmount,
+      knowledgeRating,
     });
   };
 
@@ -111,6 +121,38 @@ export function SessionResultModal({ session, subject, task, initialMinutes, onS
               </div>
             </div>
           )}
+
+          {/* Time comparison */}
+          {timeDiffPercent !== 0 && (
+            <div className={`time-comparison ${isFaster ? 'faster' : 'slower'}`}>
+              <span className="time-icon">{isFaster ? '⚡' : '🐢'}</span>
+              <span>
+                {Math.abs(timeDiffPercent)}% {isFaster ? 'sneller' : 'langzamer'} dan gepland
+              </span>
+            </div>
+          )}
+
+          {/* Knowledge rating */}
+          <div className="form-group knowledge-rating-group">
+            <label>Hoe goed heb je de stof begrepen? (1-10)</label>
+            <div className="rating-slider">
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={knowledgeRating}
+                onChange={e => setKnowledgeRating(parseInt(e.target.value))}
+                className="knowledge-slider"
+              />
+              <span className={`rating-value rating-${knowledgeRating >= 7 ? 'good' : knowledgeRating >= 5 ? 'ok' : 'low'}`}>
+                {knowledgeRating}
+              </span>
+            </div>
+            <div className="rating-labels">
+              <span>Slecht</span>
+              <span>Uitstekend</span>
+            </div>
+          </div>
 
           <div className="form-actions">
             <button type="button" onClick={onCancel} className="btn-secondary">

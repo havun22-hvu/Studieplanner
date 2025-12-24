@@ -489,10 +489,16 @@ function StudentApp() {
     // Only mark as completed if the full amount was done
     const isFullyCompleted = result.amountCompleted >= session.amountPlanned;
 
-    // Update session with actual minutes and amount
+    // Update session with actual minutes, amount, and knowledge rating
     setSessions(sessions.map(s => {
       if (s.id !== result.sessionId) return s;
-      return { ...s, completed: isFullyCompleted, minutesActual: result.minutesSpent, amountActual: result.amountCompleted };
+      return {
+        ...s,
+        completed: isFullyCompleted,
+        minutesActual: result.minutesSpent,
+        amountActual: result.amountCompleted,
+        knowledgeRating: result.knowledgeRating,
+      };
     }));
 
     // Notify mentors on complete

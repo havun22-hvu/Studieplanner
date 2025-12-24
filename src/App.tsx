@@ -725,7 +725,7 @@ function StudentApp() {
                 <p>✓ Mentor koppeling</p>
                 <p>✓ SOMtoday/Magister import</p>
               </div>
-              <p className="copyright">© 2024 Havun</p>
+              <p className="copyright">© 2025 Havun</p>
             </div>
             <button onClick={() => setShowAbout(false)} className="btn-primary">Sluiten</button>
           </div>

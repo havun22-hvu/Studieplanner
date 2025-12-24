@@ -124,7 +124,10 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
   return (
     <div className="settings-modal">
       <div className="settings-content">
-        <h2>Instellingen</h2>
+        <div className="settings-header">
+          <h2>Instellingen</h2>
+          <button onClick={onClose} className="close-btn" aria-label="Sluiten">&times;</button>
+        </div>
 
         <div className="settings-section">
           <h3>Herinneringen</h3>
@@ -361,8 +364,6 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
             )}
           </div>
         </div>
-
-        <button onClick={onClose} className="btn-primary">Sluiten</button>
       </div>
     </div>
   );

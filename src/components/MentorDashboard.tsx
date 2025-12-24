@@ -31,7 +31,7 @@ export function MentorDashboard() {
   const [codeError, setCodeError] = useState('');
   const [codeSuccess, setCodeSuccess] = useState('');
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<'agenda' | 'vakken' | 'stats'>('agenda');
+  const [view, setView] = useState<'vakken' | 'agenda' | 'stats'>('vakken');
   const [showSettings, setShowSettings] = useState(false);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
@@ -238,16 +238,16 @@ export function MentorDashboard() {
                 <h2>{studentData.student.name}</h2>
                 <nav className="student-nav">
                   <button
-                    className={view === 'agenda' ? 'active' : ''}
-                    onClick={() => setView('agenda')}
-                  >
-                    Agenda
-                  </button>
-                  <button
                     className={view === 'vakken' ? 'active' : ''}
                     onClick={() => setView('vakken')}
                   >
                     Vakken
+                  </button>
+                  <button
+                    className={view === 'agenda' ? 'active' : ''}
+                    onClick={() => setView('agenda')}
+                  >
+                    Agenda
                   </button>
                   <button
                     className={view === 'stats' ? 'active' : ''}

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Settings as SettingsType, Subject, PlannedSession } from '../types';
 // import { SchoolSystemSettings } from './SchoolSystemSettings'; // Tijdelijk uitgeschakeld
-import { useAuth } from '../contexts/AuthContext';
 import { usePWA } from '../contexts/PWAContext';
 import { useNotifications } from '../hooks/useNotifications';
 import { api } from '../services/api';
@@ -21,11 +20,9 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
   // Tijdelijk unused - voor wanneer SchoolSystemSettings weer actief wordt
   void _onImportTests;
   void _onImportHomework;
-  const { user } = useAuth();
   const { canInstall, isInstalled, install, checkForUpdate, lastUpdateCheck } = usePWA();
   const { permission, requestPermission, isSupported } = useNotifications(settings);
 
-  const [copied, setCopied] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [inviteCopied, setInviteCopied] = useState(false);
   const [mentors, setMentors] = useState<Array<{ id: number; name: string }>>([]);
@@ -96,30 +93,6 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
   };
 
   const studyStats = getStudyStats();
-
-  // Get student code from user
-  const studentCode = user?.student_code || '';
-
-  const shareLink = settings.shareCode && studentCode
-    ? `${window.location.origin}/student/${studentCode}/mentor?code=${settings.shareCode}`
-    : null;
-
-  const createShareLink = () => {
-    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-    onSave({ ...settings, shareCode: code });
-  };
-
-  const copyShareLink = async () => {
-    if (shareLink) {
-      await navigator.clipboard.writeText(shareLink);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  const removeShareLink = () => {
-    onSave({ ...settings, shareCode: undefined });
-  };
 
   return (
     <div className="settings-modal">
@@ -238,10 +211,21 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
         </div>
 
         <div className="settings-section">
-          <h3>Mentor koppelen</h3>
+          <h3>Mentoren</h3>
           <p className="section-info">
-            Genereer een code en deel deze met je mentor.
+            Koppel mentoren/ouders zodat zij je voortgang kunnen volgen.
           </p>
+
+          {mentors.length > 0 && (
+            <div className="mentor-list">
+              <p className="mentor-count">{mentors.length} mentor{mentors.length > 1 ? 'en' : ''} gekoppeld:</p>
+              <ul>
+                {mentors.map(m => (
+                  <li key={m.id}>{m.name}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {inviteCode ? (
             <div className="invite-code-box">
@@ -256,39 +240,7 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
             </div>
           ) : (
             <button onClick={generateInvite} className="btn-primary">
-              Genereer code voor mentor
-            </button>
-          )}
-
-          {mentors.length > 0 && (
-            <div className="mentor-list">
-              <h4>Mijn mentoren:</h4>
-              <ul>
-                {mentors.map(m => (
-                  <li key={m.id}>{m.name}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-
-        <div className="settings-section">
-          <h3>Mentor meekijklink</h3>
-          <p className="section-info">
-            Deel deze link met mentoren/ouders om live mee te kijken.
-          </p>
-
-          {shareLink ? (
-            <div className="share-link-box">
-              <input type="text" value={shareLink} readOnly className="share-link-input" />
-              <button onClick={copyShareLink} className="btn-copy">
-                {copied ? 'Gekopieerd!' : 'Kopieer'}
-              </button>
-              <button onClick={removeShareLink} className="btn-remove-link">Verwijder</button>
-            </div>
-          ) : (
-            <button onClick={createShareLink} className="btn-primary">
-              Genereer meekijklink
+              + Mentor toevoegen
             </button>
           )}
         </div>

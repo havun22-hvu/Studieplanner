@@ -97,7 +97,7 @@ export interface Mentor {
 }
 
 // Common units for tasks (alleen meetbare eenheden)
-export const TASK_UNITS = ['blz', 'opdrachten'] as const;
+export const TASK_UNITS = ['blz', 'opdrachten', 'min video'] as const;
 
 // Preset colors for subjects (12 colors)
 export const SUBJECT_COLORS = [

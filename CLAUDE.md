@@ -51,7 +51,7 @@ Een studieplanner app voor leerlingen om hun studietijd te plannen en bij te hou
 
 #### Agenda View
 - Weekweergave met dagen horizontaal
-- Tijdslots 8:00-20:00 verticaal
+- Tijdslots 0:00-23:00 (24 uur), scrollt naar 8:00 by default
 - Drag & drop taken naar tijdslots
 - Toetsen worden getoond op examdatum
 - Blokgrootte = tijdsduur (bijv. 2 uur = 120px)
@@ -63,10 +63,10 @@ Een studieplanner app voor leerlingen om hun studietijd te plannen en bij te hou
 - Bij <100%: nieuw blok toegevoegd aan plank
 
 #### Instellingen
-- Leerling naam
-- Studietijd per dag
-- Vrije dagen
-- Mentoren (naam + email) - **nog niet gekoppeld**
+- Timer & Herinneringen (Pomodoro, dagelijkse reminder)
+- Mentoren (invite code systeem)
+- App (installeren, updates)
+- Schoolsysteem koppeling (binnenkort)
 
 ### Gewenste Feature: Mentor Koppeling
 
@@ -219,6 +219,11 @@ npm run build
 - [x] Settings modal scroll fix (mobiel)
 - [x] Help en About naar aparte modals (dropdown menu bij ⚙️)
 - [x] Havun © copyright in About modal
+- [x] Instellingen vereenvoudigd (geen naam/studietijd/vrije dagen meer)
+- [x] Sticky header met sluitknop in instellingen
+- [x] Mentor secties samengevoegd (alleen invite code systeem)
+- [x] QR code/delen verplaatst naar About modal
+- [x] Agenda uitgebreid naar 24 uur (0:00-23:00), scrollt naar 8:00
 
 **Uitgeschakeld (wacht op werkende API):**
 - [ ] SOMtoday integratie (code aanwezig in SchoolSystemSettings.tsx)

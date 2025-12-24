@@ -1483,42 +1483,134 @@ body {
   color: var(--text-muted);
 }
 
-/* Study stats */
-.stats-list {
+/* Form rows */
+.form-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
+  align-items: flex-end;
 }
 
-.stat-item {
-  padding: 0.75rem;
-  background: var(--bg);
-  border-radius: 8px;
-  border-left: 4px solid;
+.input-with-unit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.stat-item strong {
-  display: block;
-  margin-bottom: 0.5rem;
+.input-with-unit input {
+  width: 70px;
 }
 
-.stat-speeds {
+.input-with-unit span {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* Button rows */
+.button-row {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  align-items: center;
 }
 
-.speed-badge {
-  padding: 0.25rem 0.5rem;
-  background: var(--card);
+.btn-small {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  background: var(--primary);
+  color: white;
+  border: none;
   border-radius: 4px;
-  font-size: 0.85rem;
-  color: var(--text);
+  cursor: pointer;
 }
 
-.no-stats {
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  background: var(--success, #22c55e);
+  color: white;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+/* Mentor tags */
+.mentor-list {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.mentor-tag {
+  padding: 0.25rem 0.75rem;
+  background: var(--primary);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+
+/* Invite box */
+.invite-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--bg);
+  border-radius: 8px;
+}
+
+.invite-label {
+  font-size: 0.85rem;
   color: var(--text-muted);
-  font-style: italic;
+}
+
+.invite-code {
+  font-family: monospace;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--primary);
+}
+
+/* Stats grid */
+.stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border-radius: 6px;
+  border-left: 3px solid;
+}
+
+.stat-subject {
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Text styles */
+.muted-text {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0 0;
+}
+
+.error-text {
+  color: var(--danger, #ef4444);
+  font-size: 0.85rem;
+}
+
+/* Disabled section */
+.settings-disabled {
+  opacity: 0.6;
 }
 
 .legend-item {

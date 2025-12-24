@@ -245,8 +245,8 @@ function StudentApp() {
     setCatchUpSuggestions(prev => prev.filter(s => s.subjectId !== subjectId));
   };
 
-  // SOMtoday import handlers
-  const handleImportTests = (tests: { vak: string; datum: string; omschrijving: string }[]) => {
+  // SOMtoday import handlers (voor later als schoolsysteem koppeling actief is)
+  const _handleImportTests = (tests: { vak: string; datum: string; omschrijving: string }[]) => {
     let imported = 0;
     for (const test of tests) {
       // Check if subject already exists
@@ -286,7 +286,7 @@ function StudentApp() {
     }
   };
 
-  const handleImportHomework = (homework: { vak: string; omschrijving: string }[]) => {
+  const _handleImportHomework = (homework: { vak: string; omschrijving: string }[]) => {
     let imported = 0;
     for (const hw of homework) {
       const existing = subjects.find(s => s.name.toLowerCase() === hw.vak.toLowerCase());
@@ -314,6 +314,9 @@ function StudentApp() {
       alert(`${imported} huiswerk item(s) geïmporteerd van SOMtoday`);
     }
   };
+  // Void om TypeScript errors te voorkomen (functies voor later)
+  void _handleImportTests;
+  void _handleImportHomework;
 
   // Subject CRUD
   const saveSubject = (subject: Subject) => {
@@ -637,19 +640,11 @@ function StudentApp() {
       {showSettings && (
         <Settings
           settings={settings}
-          subjects={subjects}
-          sessions={sessions}
           onSave={(newSettings) => {
             setSettings(newSettings);
             regeneratePlanning();
           }}
           onClose={() => setShowSettings(false)}
-          onShowShare={() => {
-            setShowSettings(false);
-            setShowShare(true);
-          }}
-          onImportTests={handleImportTests}
-          onImportHomework={handleImportHomework}
         />
       )}
 
@@ -713,7 +708,7 @@ function StudentApp() {
       {showAbout && (
         <div className="modal-overlay" onClick={() => setShowAbout(false)}>
           <div className="modal-content about-modal" onClick={e => e.stopPropagation()}>
-            <h2>ℹ️ Over StudiePlanner</h2>
+            <h2>Over StudiePlanner</h2>
             <div className="about-content">
               <p className="app-name"><strong>StudiePlanner</strong></p>
               <p className="app-tagline">Plan je studie slim en haal je deadlines</p>
@@ -723,11 +718,15 @@ function StudentApp() {
                 <p>✓ Pomodoro timer</p>
                 <p>✓ Voortgang bijhouden</p>
                 <p>✓ Mentor koppeling</p>
-                <p>✓ SOMtoday/Magister import</p>
               </div>
               <p className="copyright">© 2025 Havun</p>
             </div>
-            <button onClick={() => setShowAbout(false)} className="btn-primary">Sluiten</button>
+            <div className="about-actions">
+              <button onClick={() => { setShowAbout(false); setShowShare(true); }} className="btn-secondary">
+                App delen
+              </button>
+              <button onClick={() => setShowAbout(false)} className="btn-primary">Sluiten</button>
+            </div>
           </div>
         </div>
       )}

@@ -1,25 +1,16 @@
 import { useState, useEffect } from 'react';
-import type { Settings as SettingsType, Subject, PlannedSession } from '../types';
-// import { SchoolSystemSettings } from './SchoolSystemSettings'; // Tijdelijk uitgeschakeld
+import type { Settings as SettingsType } from '../types';
 import { usePWA } from '../contexts/PWAContext';
 import { useNotifications } from '../hooks/useNotifications';
 import { api } from '../services/api';
 
 interface Props {
   settings: SettingsType;
-  subjects: Subject[];
-  sessions: PlannedSession[];
   onSave: (settings: SettingsType) => void;
   onClose: () => void;
-  onShowShare: () => void;
-  onImportTests?: (tests: { vak: string; datum: string; omschrijving: string }[]) => void;
-  onImportHomework?: (homework: { vak: string; omschrijving: string }[]) => void;
 }
 
-export function Settings({ settings, subjects, sessions, onSave, onClose, onShowShare, onImportTests: _onImportTests, onImportHomework: _onImportHomework }: Props) {
-  // Tijdelijk unused - voor wanneer SchoolSystemSettings weer actief wordt
-  void _onImportTests;
-  void _onImportHomework;
+export function Settings({ settings, onSave, onClose }: Props) {
   const { canInstall, isInstalled, install, checkForUpdate, lastUpdateCheck } = usePWA();
   const { permission, requestPermission, isSupported } = useNotifications(settings);
 
@@ -28,7 +19,6 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
   const [mentors, setMentors] = useState<Array<{ id: number; name: string }>>([]);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
 
-  // Load mentors on mount
   useEffect(() => {
     loadMentors();
   }, []);
@@ -68,32 +58,6 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
     }
   };
 
-  // Bereken studiesnelheid per vak
-  const getStudyStats = () => {
-    const stats: Record<string, { blzTotal: number; blzMinutes: number; opdrTotal: number; opdrMinutes: number; name: string; color: string }> = {};
-
-    sessions.filter(s => s.completed && s.amountActual && s.minutesActual).forEach(session => {
-      const subject = subjects.find(sub => sub.id === session.subjectId);
-      if (!subject) return;
-
-      if (!stats[session.subjectId]) {
-        stats[session.subjectId] = { blzTotal: 0, blzMinutes: 0, opdrTotal: 0, opdrMinutes: 0, name: subject.name, color: subject.color };
-      }
-
-      if (session.unit === 'blz') {
-        stats[session.subjectId].blzTotal += session.amountActual!;
-        stats[session.subjectId].blzMinutes += session.minutesActual!;
-      } else if (session.unit === 'opdrachten') {
-        stats[session.subjectId].opdrTotal += session.amountActual!;
-        stats[session.subjectId].opdrMinutes += session.minutesActual!;
-      }
-    });
-
-    return stats;
-  };
-
-  const studyStats = getStudyStats();
-
   return (
     <div className="settings-modal">
       <div className="settings-content">
@@ -102,60 +66,9 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
           <button onClick={onClose} className="close-btn" aria-label="Sluiten">&times;</button>
         </div>
 
+        {/* Timer & Herinneringen */}
         <div className="settings-section">
-          <h3>Herinneringen</h3>
-
-          {isSupported ? (
-            <>
-              {permission !== 'granted' && (
-                <div className="form-group">
-                  <button onClick={requestPermission} className="btn-primary btn-full">
-                    Notificaties inschakelen
-                  </button>
-                  <small>Ontvang dagelijkse herinneringen om te studeren</small>
-                </div>
-              )}
-
-              {permission === 'granted' && (
-                <>
-                  <div className="form-group">
-                    <label className="toggle-label">
-                      <input
-                        type="checkbox"
-                        checked={settings.reminderEnabled ?? false}
-                        onChange={e => onSave({ ...settings, reminderEnabled: e.target.checked })}
-                      />
-                      <span>Dagelijkse herinnering</span>
-                    </label>
-                  </div>
-
-                  {settings.reminderEnabled && (
-                    <div className="form-group">
-                      <label>Herinneringstijd</label>
-                      <input
-                        type="time"
-                        value={settings.reminderTime ?? '16:00'}
-                        onChange={e => onSave({ ...settings, reminderTime: e.target.value })}
-                      />
-                    </div>
-                  )}
-                </>
-              )}
-
-              {permission === 'denied' && (
-                <p className="error-message">Notificaties zijn geblokkeerd. Wijzig dit in je browser instellingen.</p>
-              )}
-            </>
-          ) : (
-            <p className="section-info">Notificaties worden niet ondersteund in deze browser.</p>
-          )}
-        </div>
-
-        <div className="settings-section">
-          <h3>Pomodoro Timer</h3>
-          <p className="section-info">
-            Studeer in blokken met korte pauzes ertussen.
-          </p>
+          <h3>Timer & Herinneringen</h3>
 
           <div className="form-group">
             <label className="toggle-label">
@@ -164,157 +77,126 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onShow
                 checked={settings.pomodoroEnabled ?? false}
                 onChange={e => onSave({ ...settings, pomodoroEnabled: e.target.checked })}
               />
-              <span>Pomodoro modus</span>
+              <span>Pomodoro modus (werken in blokken)</span>
             </label>
           </div>
 
           {settings.pomodoroEnabled && (
-            <>
+            <div className="form-row pomodoro-settings">
               <div className="form-group">
-                <label>Werk tijd (minuten)</label>
-                <input
-                  type="number"
-                  value={settings.pomodoroWorkMinutes ?? 25}
-                  onChange={e => onSave({ ...settings, pomodoroWorkMinutes: parseInt(e.target.value) || 25 })}
-                  min="5"
-                  max="60"
-                  step="5"
-                />
+                <label>Werktijd</label>
+                <div className="input-with-unit">
+                  <input
+                    type="number"
+                    value={settings.pomodoroWorkMinutes ?? 25}
+                    onChange={e => onSave({ ...settings, pomodoroWorkMinutes: parseInt(e.target.value) || 25 })}
+                    min="5"
+                    max="60"
+                    step="5"
+                  />
+                  <span>min</span>
+                </div>
               </div>
               <div className="form-group">
-                <label>Pauze tijd (minuten)</label>
-                <input
-                  type="number"
-                  value={settings.pomodoroBreakMinutes ?? 5}
-                  onChange={e => onSave({ ...settings, pomodoroBreakMinutes: parseInt(e.target.value) || 5 })}
-                  min="1"
-                  max="30"
-                />
+                <label>Pauze</label>
+                <div className="input-with-unit">
+                  <input
+                    type="number"
+                    value={settings.pomodoroBreakMinutes ?? 5}
+                    onChange={e => onSave({ ...settings, pomodoroBreakMinutes: parseInt(e.target.value) || 5 })}
+                    min="1"
+                    max="30"
+                  />
+                  <span>min</span>
+                </div>
               </div>
-            </>
+            </div>
+          )}
+
+          {isSupported && permission !== 'granted' && (
+            <button onClick={requestPermission} className="btn-secondary btn-full">
+              Notificaties inschakelen
+            </button>
+          )}
+
+          {isSupported && permission === 'granted' && (
+            <div className="form-group">
+              <label className="toggle-label">
+                <input
+                  type="checkbox"
+                  checked={settings.reminderEnabled ?? false}
+                  onChange={e => onSave({ ...settings, reminderEnabled: e.target.checked })}
+                />
+                <span>Dagelijkse herinnering</span>
+              </label>
+              {settings.reminderEnabled && (
+                <input
+                  type="time"
+                  value={settings.reminderTime ?? '16:00'}
+                  onChange={e => onSave({ ...settings, reminderTime: e.target.value })}
+                  className="time-input"
+                />
+              )}
+            </div>
+          )}
+
+          {isSupported && permission === 'denied' && (
+            <p className="error-text">Notificaties geblokkeerd in browser</p>
           )}
         </div>
 
-        {/* Schoolsysteem koppeling tijdelijk uitgeschakeld - API niet beschikbaar
-        <div className="settings-section">
-          <SchoolSystemSettings
-            onImportTests={onImportTests || (() => {})}
-            onImportHomework={onImportHomework || (() => {})}
-          />
-        </div>
-        */}
-        <div className="settings-section">
-          <h3>📚 Schoolsysteem Koppeling</h3>
-          <p className="section-info coming-soon">
-            Binnenkort: koppel SOMtoday of Magister om toetsen automatisch te importeren.
-          </p>
-        </div>
-
+        {/* Mentoren */}
         <div className="settings-section">
           <h3>Mentoren</h3>
-          <p className="section-info">
-            Koppel mentoren/ouders zodat zij je voortgang kunnen volgen.
-          </p>
-
           {mentors.length > 0 && (
             <div className="mentor-list">
-              <p className="mentor-count">{mentors.length} mentor{mentors.length > 1 ? 'en' : ''} gekoppeld:</p>
-              <ul>
-                {mentors.map(m => (
-                  <li key={m.id}>{m.name}</li>
-                ))}
-              </ul>
+              {mentors.map(m => (
+                <span key={m.id} className="mentor-tag">{m.name}</span>
+              ))}
             </div>
           )}
-
           {inviteCode ? (
-            <div className="invite-code-box">
-              <p>Deel deze code met je mentor:</p>
-              <div className="invite-code">{inviteCode}</div>
-              <button onClick={copyInviteCode} className="btn-copy">
+            <div className="invite-box">
+              <span className="invite-label">Code:</span>
+              <code className="invite-code">{inviteCode}</code>
+              <button onClick={copyInviteCode} className="btn-small">
                 {inviteCopied ? 'Gekopieerd!' : 'Kopieer'}
               </button>
-              <button onClick={() => setInviteCode(null)} className="btn-secondary">
-                Nieuwe code
-              </button>
             </div>
           ) : (
-            <button onClick={generateInvite} className="btn-primary">
-              + Mentor toevoegen
+            <button onClick={generateInvite} className="btn-secondary">
+              + Mentor uitnodigen
             </button>
           )}
         </div>
 
-        <div className="settings-section">
-          <h3>Mijn studiesnelheid</h3>
-          <p className="section-info">
-            Gemiddelde snelheid per vak (op basis van voltooide sessies).
-          </p>
-
-          {Object.keys(studyStats).length === 0 ? (
-            <p className="no-stats">Nog geen voltooide sessies om te analyseren.</p>
-          ) : (
-            <div className="stats-list">
-              {Object.entries(studyStats).map(([subjectId, stat]) => {
-                const blzPerHour = stat.blzMinutes > 0 ? Math.round((stat.blzTotal / stat.blzMinutes) * 60) : 0;
-                const opdrPerHour = stat.opdrMinutes > 0 ? Math.round((stat.opdrTotal / stat.opdrMinutes) * 60 * 10) / 10 : 0;
-
-                return (
-                  <div key={subjectId} className="stat-item" style={{ borderLeftColor: stat.color }}>
-                    <strong style={{ color: stat.color }}>{stat.name}</strong>
-                    <div className="stat-speeds">
-                      {stat.blzTotal > 0 && (
-                        <span className="speed-badge">{blzPerHour} blz/uur</span>
-                      )}
-                      {stat.opdrTotal > 0 && (
-                        <span className="speed-badge">{opdrPerHour} opdr/uur</span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        <div className="settings-section">
-          <h3>App delen</h3>
-          <p className="section-info">
-            Deel StudiePlanner met je klasgenoten!
-          </p>
-          <button onClick={onShowShare} className="btn-secondary">
-            QR Code & Link
-          </button>
-        </div>
-
+        {/* App */}
         <div className="settings-section">
           <h3>App</h3>
-
-          {canInstall && (
-            <div className="form-group">
-              <button onClick={install} className="btn-primary btn-full">
-                Installeer App
+          <div className="button-row">
+            {canInstall && (
+              <button onClick={install} className="btn-primary">
+                Installeren
               </button>
-              <small>Installeer voor offline gebruik en snellere toegang</small>
-            </div>
-          )}
-
-          {isInstalled && (
-            <p className="installed-badge">App is geinstalleerd</p>
-          )}
-
-          <div className="form-group">
+            )}
+            {isInstalled && <span className="status-badge">Geïnstalleerd</span>}
             <button
               onClick={handleCheckUpdate}
-              className="btn-secondary btn-full"
+              className="btn-secondary"
               disabled={isCheckingUpdate}
             >
-              {isCheckingUpdate ? 'Controleren...' : 'Controleer op updates'}
+              {isCheckingUpdate ? 'Controleren...' : 'Updates'}
             </button>
-            {lastUpdateCheck && (
-              <small>Laatst gecontroleerd: {lastUpdateCheck.toLocaleTimeString()}</small>
-            )}
           </div>
+          {lastUpdateCheck && (
+            <p className="muted-text">Laatst gecontroleerd: {lastUpdateCheck.toLocaleTimeString()}</p>
+          )}
+        </div>
+
+        {/* Schoolsysteem - onderaan, nog niet actief */}
+        <div className="settings-section settings-disabled">
+          <h3>Schoolsysteem</h3>
+          <p className="muted-text">SOMtoday en Magister koppeling komt binnenkort.</p>
         </div>
       </div>
     </div>

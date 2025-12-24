@@ -102,12 +102,12 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
 
   const getSessionsForDate = (date: Date) => {
     const dateStr = date.toISOString().split('T')[0];
-    return sessions.filter(s => s.date === dateStr && s.hour !== undefined);
+    return sessions.filter(s => s.date === dateStr && s.hour !== undefined && s.hour !== null);
   };
 
   // Get unscheduled sessions (have date but no hour)
   const getUnscheduledSessions = () => {
-    return sessions.filter(s => s.hour === undefined);
+    return sessions.filter(s => s.hour === undefined || s.hour === null);
   };
 
   // Get exams for a specific date

@@ -147,56 +147,59 @@ export function MentorDashboard() {
           <h1>Mentor Dashboard</h1>
           <span className="mentor-name">{user?.name}</span>
         </div>
-        <div className="mentor-header-right">
-          <div className="settings-wrapper">
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="btn-settings"
-              title="Instellingen"
-            >
-              ⚙️
-            </button>
-            {showSettings && (
-              <div className="settings-dropdown">
-                <div className="dropdown-section">
-                  <h4>Leerling Toevoegen</h4>
-                  <p className="section-hint">Vraag de leerling om een code te genereren.</p>
-                  <div className="student-code-input">
-                    <input
-                      type="text"
-                      value={studentCode}
-                      onChange={e => setStudentCode(e.target.value.toUpperCase())}
-                      placeholder="Voer code in"
-                      maxLength={10}
-                    />
-                    <button onClick={handleAcceptStudent} className="btn-add-student">
-                      Toevoegen
-                    </button>
-                  </div>
-                  {codeError && <p className="error-message">{codeError}</p>}
-                  {codeSuccess && <p className="success-message">{codeSuccess}</p>}
-                </div>
-
-                <div className="dropdown-section dropdown-about">
-                  <h4>Over StudiePlanner</h4>
-                  <p className="app-version">Versie {APP_VERSION}</p>
-                  <button
-                    onClick={handleCheckUpdate}
-                    className="btn-check-update"
-                    disabled={isCheckingUpdate}
-                  >
-                    {isCheckingUpdate ? 'Controleren...' : 'Controleer op updates'}
+        <div className="settings-wrapper">
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="btn-settings"
+            title="Instellingen"
+          >
+            ⚙️
+          </button>
+          {showSettings && (
+            <div className="settings-dropdown">
+              <div className="dropdown-section">
+                <h4>Leerling Toevoegen</h4>
+                <p className="section-hint">Vraag de leerling om een code te genereren.</p>
+                <div className="student-code-input">
+                  <input
+                    type="text"
+                    value={studentCode}
+                    onChange={e => setStudentCode(e.target.value.toUpperCase())}
+                    placeholder="Voer code in"
+                    maxLength={10}
+                  />
+                  <button onClick={handleAcceptStudent} className="btn-add-student">
+                    Toevoegen
                   </button>
-                  {updateMessage && <p className="success-message">{updateMessage}</p>}
-                  {lastUpdateCheck && (
-                    <p className="muted-text">Laatst: {lastUpdateCheck.toLocaleTimeString()}</p>
-                  )}
-                  <p className="copyright">© {new Date().getFullYear()} Havun</p>
                 </div>
+                {codeError && <p className="error-message">{codeError}</p>}
+                {codeSuccess && <p className="success-message">{codeSuccess}</p>}
               </div>
-            )}
-          </div>
-          <button onClick={logout} className="btn-logout">Uitloggen</button>
+
+              <div className="dropdown-section dropdown-about">
+                <h4>Over StudiePlanner</h4>
+                <p className="app-version">Versie {APP_VERSION}</p>
+                <button
+                  onClick={handleCheckUpdate}
+                  className="btn-check-update"
+                  disabled={isCheckingUpdate}
+                >
+                  {isCheckingUpdate ? 'Controleren...' : 'Controleer op updates'}
+                </button>
+                {updateMessage && <p className="success-message">{updateMessage}</p>}
+                {lastUpdateCheck && (
+                  <p className="muted-text">Laatst: {lastUpdateCheck.toLocaleTimeString()}</p>
+                )}
+                <p className="copyright">© {new Date().getFullYear()} Havun</p>
+              </div>
+
+              <div className="dropdown-section dropdown-logout">
+                <button onClick={logout} className="btn-logout-dropdown">
+                  Uitloggen
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 

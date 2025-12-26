@@ -7,7 +7,7 @@ import { AgendaView } from './AgendaView';
 import { StatsView } from './StatsView';
 import './MentorDashboard.css';
 
-const APP_VERSION = '2.9.4';
+const APP_VERSION = '2.9.5';
 
 interface Student {
   id: number;
@@ -209,6 +209,10 @@ export function MentorDashboard() {
           </button>
           {showSettings && (
             <div className="settings-dropdown">
+              <div className="dropdown-header">
+                <h4>Instellingen</h4>
+                <button onClick={() => setShowSettings(false)} className="btn-close-dropdown">&times;</button>
+              </div>
               <div className="dropdown-section">
                 <h4>Leerling Toevoegen</h4>
                 <p className="section-hint">Vraag de leerling om een code te genereren.</p>

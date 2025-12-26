@@ -1755,7 +1755,9 @@ body {
   padding: 0.4rem 0.5rem;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
-  overflow-x: auto;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 .task-pool h3 {
@@ -1769,10 +1771,13 @@ body {
   flex-wrap: nowrap;
   gap: 0.4rem;
   overflow-x: auto;
+  overflow-y: hidden;
   padding-bottom: 0.25rem;
   -webkit-overflow-scrolling: touch;
   min-height: 36px;
   align-items: center;
+  max-width: 100%;
+  width: 100%;
 }
 
 .pool-empty {

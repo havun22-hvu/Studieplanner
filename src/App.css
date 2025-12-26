@@ -1749,7 +1749,6 @@ body {
   height: calc(100vh - 180px);
   background: var(--card);
   border-radius: 12px;
-  overflow: hidden;
 }
 
 .task-pool {

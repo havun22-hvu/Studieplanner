@@ -1766,6 +1766,7 @@ body {
 
 .task-chips {
   display: flex;
+  flex-wrap: nowrap;
   gap: 0.5rem;
   overflow-x: auto;
   padding-bottom: 0.5rem;

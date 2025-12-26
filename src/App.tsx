@@ -433,6 +433,36 @@ function StudentApp() {
     regeneratePlanning();
   };
 
+  // Delete task from subject
+  const deleteTask = (subjectId: string, taskId: string) => {
+    // Also remove sessions for this task
+    setSessions(sessions.filter(s => s.taskId !== taskId));
+    setSubjects(subjects.map(subject => {
+      if (subject.id !== subjectId) return subject;
+      return {
+        ...subject,
+        tasks: subject.tasks.filter(task => task.id !== taskId),
+      };
+    }));
+    // Regenerate planning after delete
+    setTimeout(() => regeneratePlanning(), 100);
+  };
+
+  // Edit task in subject
+  const editTask = (subjectId: string, taskId: string, updates: Partial<StudyTask>) => {
+    setSubjects(subjects.map(subject => {
+      if (subject.id !== subjectId) return subject;
+      return {
+        ...subject,
+        tasks: subject.tasks.map(task =>
+          task.id === taskId ? { ...task, ...updates } : task
+        ),
+      };
+    }));
+    // Regenerate planning after edit
+    setTimeout(() => regeneratePlanning(), 100);
+  };
+
   // Update session date and hour (for drag & drop)
   const updateSession = (sessionId: string, newDate: string, newHour: number | undefined) => {
     setSessions(sessions.map(session =>
@@ -626,6 +656,8 @@ function StudentApp() {
                       onDelete={deleteSubject}
                       onToggleTask={toggleTask}
                       onAddTask={addTaskToSubject}
+                      onDeleteTask={deleteTask}
+                      onEditTask={editTask}
                     />
                   ))}
               </div>
@@ -745,7 +777,7 @@ function StudentApp() {
             <div className="about-content">
               <p className="app-name"><strong>StudiePlanner</strong></p>
               <p className="app-tagline">Plan je studie slim en haal je deadlines</p>
-              <p className="app-version">Versie 2.9.2</p>
+              <p className="app-version">Versie 2.9.3</p>
               <div className="about-features">
                 <p>✓ Automatische studieplanning</p>
                 <p>✓ Pomodoro timer</p>

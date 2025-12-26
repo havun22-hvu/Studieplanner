@@ -10,14 +10,17 @@ interface Props {
   onDelete: (id: string) => void;
   onToggleTask: (subjectId: string, taskId: string) => void;
   onAddTask: (subjectId: string, task: StudyTask) => void;
+  onDeleteTask: (subjectId: string, taskId: string) => void;
+  onEditTask: (subjectId: string, taskId: string, updates: Partial<StudyTask>) => void;
 }
 
-export function SubjectCard({ subject, sessions, onEdit, onDelete, onToggleTask, onAddTask }: Props) {
+export function SubjectCard({ subject, sessions, onEdit, onDelete, onToggleTask, onAddTask, onDeleteTask, onEditTask }: Props) {
   const [showAddTask, setShowAddTask] = useState(false);
   const [taskDesc, setTaskDesc] = useState('');
   const [taskAmount, setTaskAmount] = useState('');
   const [taskUnit, setTaskUnit] = useState<string>(TASK_UNITS[0]);
   const [taskMinutes, setTaskMinutes] = useState('');
+  const [editingTask, setEditingTask] = useState<StudyTask | null>(null);
 
   const daysLeft = getDaysUntil(subject.examDate);
   const totalMin = getTotalMinutes(subject);
@@ -147,6 +150,62 @@ export function SubjectCard({ subject, sessions, onEdit, onDelete, onToggleTask,
       <ul className="task-checklist">
         {subject.tasks.map(task => {
           const sessionStats = getTaskSessions(task.id);
+          const isEditing = editingTask?.id === task.id;
+
+          if (isEditing) {
+            return (
+              <li key={task.id} className="task-editing">
+                <input
+                  type="text"
+                  value={editingTask.description}
+                  onChange={e => setEditingTask({ ...editingTask, description: e.target.value })}
+                  className="edit-task-desc"
+                  autoFocus
+                />
+                <div className="edit-task-row">
+                  <input
+                    type="number"
+                    value={editingTask.plannedAmount}
+                    onChange={e => setEditingTask({ ...editingTask, plannedAmount: parseInt(e.target.value) || 0 })}
+                    min="1"
+                    className="edit-task-amount"
+                  />
+                  <select
+                    value={editingTask.unit}
+                    onChange={e => setEditingTask({ ...editingTask, unit: e.target.value })}
+                    className="edit-task-unit"
+                  >
+                    {TASK_UNITS.map(unit => (
+                      <option key={unit} value={unit}>{unit}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    value={editingTask.estimatedMinutes}
+                    onChange={e => setEditingTask({ ...editingTask, estimatedMinutes: parseInt(e.target.value) || 0 })}
+                    min="1"
+                    className="edit-task-time"
+                  />
+                  <span className="edit-min-label">min</span>
+                </div>
+                <div className="edit-task-actions">
+                  <button
+                    onClick={() => {
+                      onEditTask(subject.id, task.id, editingTask);
+                      setEditingTask(null);
+                    }}
+                    className="btn-save-task"
+                  >
+                    ✓
+                  </button>
+                  <button onClick={() => setEditingTask(null)} className="btn-cancel-task">
+                    ✕
+                  </button>
+                </div>
+              </li>
+            );
+          }
+
           return (
             <li key={task.id} className={task.completed ? 'completed' : ''}>
               <label>
@@ -155,7 +214,7 @@ export function SubjectCard({ subject, sessions, onEdit, onDelete, onToggleTask,
                   checked={task.completed}
                   onChange={() => onToggleTask(subject.id, task.id)}
                 />
-                <div className="task-info">
+                <div className="task-info" onClick={(e) => { e.preventDefault(); setEditingTask(task); }}>
                   <span className="task-description">{task.description}</span>
                   <div className="task-meta">
                     <small className="task-amount-info">{task.plannedAmount} {task.unit}</small>
@@ -168,6 +227,13 @@ export function SubjectCard({ subject, sessions, onEdit, onDelete, onToggleTask,
                   </div>
                 </div>
               </label>
+              <button
+                className="btn-delete-task"
+                onClick={() => onDeleteTask(subject.id, task.id)}
+                title="Verwijder taak"
+              >
+                🗑️
+              </button>
             </li>
           );
         })}

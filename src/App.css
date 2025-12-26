@@ -3112,10 +3112,17 @@ input[type="time"] {
 }
 
 /* Task tips */
+.tasks-list-compact {
+  max-height: 150px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .task-row {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  padding: 0.25rem 0;
 }
 
 .task-tip {

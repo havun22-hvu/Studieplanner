@@ -262,9 +262,8 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
                   onMouseDown={(e) => !readOnly && handleTaskDragStart(e, session, subject)}
                   onTouchStart={(e) => !readOnly && handleTaskDragStart(e, session, subject)}
                 >
-                  <span className="chip-name">{subject.name}</span>
+                  <span className="chip-name">{subject.name} ({session.minutesPlanned}m)</span>
                   <span className="chip-task-name">{task?.description}</span>
-                  <span className="chip-time">{session.minutesPlanned}m</span>
                 </div>
               );
             })

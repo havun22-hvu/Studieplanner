@@ -7,7 +7,7 @@ import { AgendaView } from './AgendaView';
 import { StatsView } from './StatsView';
 import './MentorDashboard.css';
 
-const APP_VERSION = '2.8.8';
+const APP_VERSION = '2.8.9';
 
 interface Student {
   id: number;

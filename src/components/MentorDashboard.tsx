@@ -7,7 +7,7 @@ import { AgendaView } from './AgendaView';
 import { StatsView } from './StatsView';
 import './MentorDashboard.css';
 
-const APP_VERSION = '2.8.5';
+const APP_VERSION = '2.8.6';
 
 interface Student {
   id: number;
@@ -32,7 +32,13 @@ export function MentorDashboard() {
   const [codeSuccess, setCodeSuccess] = useState('');
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'vakken' | 'agenda' | 'stats'>('vakken');
-  const [showSettings, setShowSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(() => {
+    const shouldShow = localStorage.getItem('showAboutAfterUpdate') === 'true';
+    if (shouldShow) {
+      localStorage.removeItem('showAboutAfterUpdate');
+    }
+    return shouldShow;
+  });
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -83,6 +89,7 @@ export function MentorDashboard() {
       await checkForUpdate();
       // Force reload to get latest version
       setUpdateMessage('App wordt herladen...');
+      localStorage.setItem('showAboutAfterUpdate', 'true');
       setTimeout(() => {
         window.location.reload();
       }, 500);

@@ -81,6 +81,7 @@ export function Settings({ settings, subjects, sessions, onSave, onClose }: Prop
       await checkForUpdate();
       // Force reload to get latest version
       setUpdateMessage('App wordt herladen...');
+      localStorage.setItem('showAboutAfterUpdate', 'true');
       setTimeout(() => {
         window.location.reload();
       }, 500);

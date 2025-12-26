@@ -138,7 +138,13 @@ function StudentApp() {
   const [showShare, setShowShare] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [showAbout, setShowAbout] = useState(false);
+  const [showAbout, setShowAbout] = useState(() => {
+    const shouldShow = localStorage.getItem('showAboutAfterUpdate') === 'true';
+    if (shouldShow) {
+      localStorage.removeItem('showAboutAfterUpdate');
+    }
+    return shouldShow;
+  });
   const [editingSubject, setEditingSubject] = useState<Subject | undefined>();
   const [selectedSession, setSelectedSession] = useState<PlannedSession | null>(null);
   const [timerSession, setTimerSession] = useState<PlannedSession | null>(null);
@@ -739,7 +745,7 @@ function StudentApp() {
             <div className="about-content">
               <p className="app-name"><strong>StudiePlanner</strong></p>
               <p className="app-tagline">Plan je studie slim en haal je deadlines</p>
-              <p className="app-version">Versie 2.8.5</p>
+              <p className="app-version">Versie 2.8.6</p>
               <div className="about-features">
                 <p>✓ Automatische studieplanning</p>
                 <p>✓ Pomodoro timer</p>

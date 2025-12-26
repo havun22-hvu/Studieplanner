@@ -21,10 +21,13 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
   const [taskUnit, setTaskUnit] = useState<string>(TASK_UNITS[0]);
   const [taskMinutes, setTaskMinutes] = useState('');
 
+  const isVideoUnit = taskUnit === 'min video';
+
   const addTask = () => {
     if (!taskDesc) return;
     if (!taskAmount || parseInt(taskAmount) <= 0) return;
-    if (!taskMinutes || parseInt(taskMinutes) <= 0) return;
+    // Bij video is amount = tijd, anders apart tijd veld vereist
+    if (!isVideoUnit && (!taskMinutes || parseInt(taskMinutes) <= 0)) return;
 
     const newTask: StudyTask = {
       id: generateId(),
@@ -32,7 +35,7 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
       description: taskDesc,
       plannedAmount: parseInt(taskAmount),
       unit: taskUnit,
-      estimatedMinutes: parseInt(taskMinutes),
+      estimatedMinutes: isVideoUnit ? parseInt(taskAmount) : parseInt(taskMinutes),
       completed: false,
     };
 
@@ -121,7 +124,7 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
               type="number"
               value={taskAmount}
               onChange={e => setTaskAmount(e.target.value)}
-              placeholder="Aantal"
+              placeholder={isVideoUnit ? "Minuten" : "Aantal"}
               min="1"
               className="form-amount-input"
             />
@@ -136,15 +139,19 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
             </select>
           </div>
           <div className="form-input-row">
-            <input
-              type="number"
-              value={taskMinutes}
-              onChange={e => setTaskMinutes(e.target.value)}
-              placeholder="Tijd"
-              min="1"
-              className="form-time-input"
-            />
-            <span className="form-min-label">min.</span>
+            {!isVideoUnit && (
+              <>
+                <input
+                  type="number"
+                  value={taskMinutes}
+                  onChange={e => setTaskMinutes(e.target.value)}
+                  placeholder="Tijd"
+                  min="1"
+                  className="form-time-input"
+                />
+                <span className="form-min-label">min.</span>
+              </>
+            )}
             <button type="button" onClick={addTask} className="btn-add-task">Toevoegen</button>
           </div>
         </div>

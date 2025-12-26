@@ -42,7 +42,9 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
   const gridRef = useRef<HTMLDivElement>(null);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggered = useRef(false);
+  const pressStartPos = useRef<{ x: number; y: number } | null>(null);
   const LONG_PRESS_DELAY = 1500; // 1.5 seconds
+  const MOVE_THRESHOLD = 10; // pixels before canceling long press
 
   // Scroll to default hour (8:00) on mount
   useEffect(() => {
@@ -134,6 +136,7 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
+    pressStartPos.current = { x: clientX, y: clientY };
     longPressTriggered.current = false;
     longPressTimer.current = setTimeout(() => {
       longPressTriggered.current = true;
@@ -144,15 +147,22 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
   };
 
   // Handle touch/mouse move - cancel long press if moved too much
-  const handlePressMove = () => {
-    if (longPressTimer.current && !longPressTriggered.current) {
-      cancelLongPress();
+  const handlePressMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (longPressTimer.current && !longPressTriggered.current && pressStartPos.current) {
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+      const dx = Math.abs(clientX - pressStartPos.current.x);
+      const dy = Math.abs(clientY - pressStartPos.current.y);
+      if (dx > MOVE_THRESHOLD || dy > MOVE_THRESHOLD) {
+        cancelLongPress();
+      }
     }
   };
 
   // Handle touch/mouse end - cancel long press
   const handlePressEnd = () => {
     cancelLongPress();
+    pressStartPos.current = null;
   };
 
   // Drag start for task chips in pool (with long press)
@@ -160,6 +170,7 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
+    pressStartPos.current = { x: clientX, y: clientY };
     longPressTriggered.current = false;
     longPressTimer.current = setTimeout(() => {
       longPressTriggered.current = true;

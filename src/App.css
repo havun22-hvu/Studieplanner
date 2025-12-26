@@ -3040,6 +3040,48 @@ input[type="time"] {
   margin-top: 0.5rem;
 }
 
+/* Mentor Vakken View - horizontaal scrollbaar */
+.subjects-view {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.5rem;
+  padding-bottom: 1rem;
+}
+
+.subject-card-mentor {
+  background: var(--card);
+  border-radius: 8px;
+  padding: 1rem;
+  border-left: 4px solid;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  min-width: 220px;
+  flex-shrink: 0;
+}
+
+.subject-header-mentor {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.subject-header-mentor h3 {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.subject-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
 /* Mentor Study Speed */
 .mentor-speed {
   padding: 1rem;

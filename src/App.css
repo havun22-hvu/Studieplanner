@@ -1753,26 +1753,26 @@ body {
 }
 
 .task-pool {
-  padding: 0.75rem;
+  padding: 0.4rem 0.5rem;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
 }
 
 .task-pool h3 {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .task-chips {
   display: flex;
   flex-wrap: nowrap;
-  gap: 0.5rem;
+  gap: 0.4rem;
   overflow-x: auto;
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.25rem;
   -webkit-overflow-scrolling: touch;
-  min-height: 50px;
+  min-height: 36px;
   align-items: center;
 }
 
@@ -1785,14 +1785,14 @@ body {
 .task-chip {
   display: flex;
   flex-direction: column;
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
   color: white;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   flex-shrink: 0;
   cursor: grab;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  min-width: 90px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  min-width: 70px;
   user-select: none;
   touch-action: none;
 }

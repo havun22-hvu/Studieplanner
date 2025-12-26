@@ -144,7 +144,7 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
   };
 
   // Handle touch/mouse move - cancel long press if moved too much
-  const handlePressMove = (e: React.MouseEvent | React.TouchEvent) => {
+  const handlePressMove = () => {
     if (longPressTimer.current && !longPressTriggered.current) {
       cancelLongPress();
     }

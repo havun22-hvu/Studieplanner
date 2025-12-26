@@ -38,7 +38,11 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
   const [isDragging, setIsDragging] = useState(false);
   const [dragItem, setDragItem] = useState<DragItem | null>(null);
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressTriggered = useRef(false);
+  const LONG_PRESS_DELAY = 1500; // 1.5 seconds
 
   // Scroll to default hour (8:00) on mount
   useEffect(() => {
@@ -116,30 +120,53 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
     return subjects.filter(s => s.examDate === dateStr);
   };
 
-  // Drag start for session chips in agenda
-  const handleSessionDragStart = (e: React.MouseEvent | React.TouchEvent, session: PlannedSession) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-
-    setIsDragging(true);
-    setDragItem({ type: 'session', session });
-    setDragPosition({ x: clientX, y: clientY });
+  // Cancel long press
+  const cancelLongPress = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    longPressTriggered.current = false;
   };
 
-  // Drag start for task chips in pool
-  const handleTaskDragStart = (e: React.MouseEvent | React.TouchEvent, session: PlannedSession, subject: Subject) => {
-    e.preventDefault();
-    e.stopPropagation();
-
+  // Drag start for session chips in agenda (with long press)
+  const handleSessionDragStart = (e: React.MouseEvent | React.TouchEvent, session: PlannedSession) => {
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
-    setIsDragging(true);
-    setDragItem({ type: 'session', session, subject });
-    setDragPosition({ x: clientX, y: clientY });
+    longPressTriggered.current = false;
+    longPressTimer.current = setTimeout(() => {
+      longPressTriggered.current = true;
+      setIsDragging(true);
+      setDragItem({ type: 'session', session });
+      setDragPosition({ x: clientX, y: clientY });
+    }, LONG_PRESS_DELAY);
+  };
+
+  // Handle touch/mouse move - cancel long press if moved too much
+  const handlePressMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (longPressTimer.current && !longPressTriggered.current) {
+      cancelLongPress();
+    }
+  };
+
+  // Handle touch/mouse end - cancel long press
+  const handlePressEnd = () => {
+    cancelLongPress();
+  };
+
+  // Drag start for task chips in pool (with long press)
+  const handleTaskDragStart = (e: React.MouseEvent | React.TouchEvent, session: PlannedSession, subject: Subject) => {
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+    longPressTriggered.current = false;
+    longPressTimer.current = setTimeout(() => {
+      longPressTriggered.current = true;
+      setIsDragging(true);
+      setDragItem({ type: 'session', session, subject });
+      setDragPosition({ x: clientX, y: clientY });
+    }, LONG_PRESS_DELAY);
   };
 
   const handleDragMove = useCallback((e: MouseEvent | TouchEvent) => {
@@ -261,6 +288,10 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
                   style={{ backgroundColor: subject.color }}
                   onMouseDown={(e) => !readOnly && handleTaskDragStart(e, session, subject)}
                   onTouchStart={(e) => !readOnly && handleTaskDragStart(e, session, subject)}
+                  onMouseUp={handlePressEnd}
+                  onTouchEnd={handlePressEnd}
+                  onTouchMove={handlePressMove}
+                  onMouseLeave={handlePressEnd}
                 >
                   <span className="chip-name">{subject.name} ({session.minutesPlanned}m)</span>
                   <span className="chip-task-name">{task?.description}</span>
@@ -288,8 +319,13 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
           const dateStr = day.toISOString().split('T')[0];
           const isToday = dateStr === today;
           const exams = getExamsForDate(day);
+          const isSelected = selectedDay === dateStr;
           return (
-            <div key={dateStr} className={`day-header-cell ${isToday ? 'today' : ''} ${exams.length > 0 ? 'has-exam' : ''}`}>
+            <div
+              key={dateStr}
+              className={`day-header-cell ${isToday ? 'today' : ''} ${exams.length > 0 ? 'has-exam' : ''} ${isSelected ? 'selected' : ''}`}
+              onClick={() => setSelectedDay(isSelected ? null : dateStr)}
+            >
               <span className="day-name">{formatDay(day)}</span>
               <span className={`day-num ${isToday ? 'today-num' : ''}`}>{formatDateNum(day)}</span>
               {exams.map(exam => (
@@ -356,8 +392,12 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
                     }}
                     onMouseDown={(e) => !readOnly && handleSessionDragStart(e, session)}
                     onTouchStart={(e) => !readOnly && handleSessionDragStart(e, session)}
+                    onMouseUp={handlePressEnd}
+                    onTouchEnd={handlePressEnd}
+                    onTouchMove={handlePressMove}
+                    onMouseLeave={handlePressEnd}
                     onClick={(e) => {
-                      if (!isDragging && !readOnly) {
+                      if (!isDragging && !longPressTriggered.current && !readOnly) {
                         e.stopPropagation();
                         onSessionClick(session);
                       }
@@ -412,6 +452,53 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
         >
           <span>{getDragSubject()?.name}</span>
           <small>{getDragTask()?.description}</small>
+        </div>
+      )}
+
+      {/* Day detail modal */}
+      {selectedDay && (
+        <div className="day-detail-overlay" onClick={() => setSelectedDay(null)}>
+          <div className="day-detail-modal" onClick={e => e.stopPropagation()}>
+            <div className="day-detail-header">
+              <h3>{new Date(selectedDay).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
+              <button className="close-btn" onClick={() => setSelectedDay(null)}>&times;</button>
+            </div>
+            <div className="day-detail-content">
+              {getSessionsForDate(new Date(selectedDay)).length === 0 ? (
+                <p className="no-sessions">Geen taken gepland voor deze dag.</p>
+              ) : (
+                getSessionsForDate(new Date(selectedDay))
+                  .sort((a, b) => (a.hour || 0) - (b.hour || 0))
+                  .map(session => {
+                    const subject = getSubject(session.subjectId);
+                    const task = getTask(session.subjectId, session.taskId);
+                    return (
+                      <div
+                        key={session.id}
+                        className={`day-detail-session ${session.completed ? 'completed' : ''}`}
+                        style={{ borderLeftColor: subject?.color }}
+                        onClick={() => {
+                          if (!readOnly) {
+                            setSelectedDay(null);
+                            onSessionClick(session);
+                          }
+                        }}
+                      >
+                        <div className="session-time">{session.hour}:00</div>
+                        <div className="session-info">
+                          <span className="session-subject" style={{ color: subject?.color }}>{subject?.name}</span>
+                          <span className="session-task">{task?.description}</span>
+                          <span className="session-duration">{session.minutesPlanned} min</span>
+                        </div>
+                        {session.completed && (
+                          <span className="session-done">✓</span>
+                        )}
+                      </div>
+                    );
+                  })
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

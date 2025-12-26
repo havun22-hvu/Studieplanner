@@ -36,6 +36,25 @@ export function SubjectCard({ subject, sessions, onEdit, onDelete, onToggleTask,
     return { total: taskSessions.length, completed };
   };
 
+  // Get next scheduled session for task
+  const getNextSession = (taskId: string) => {
+    const taskSessions = sessions
+      .filter(s => s.taskId === taskId && !s.completed && s.hour !== undefined)
+      .sort((a, b) => {
+        const dateCompare = a.date.localeCompare(b.date);
+        if (dateCompare !== 0) return dateCompare;
+        return (a.hour || 0) - (b.hour || 0);
+      });
+    return taskSessions[0] || null;
+  };
+
+  // Format date short (ma 23/12)
+  const formatDateShort = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const days = ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za'];
+    return `${days[date.getDay()]} ${date.getDate()}/${date.getMonth() + 1}`;
+  };
+
   const handleAddTask = () => {
     if (!taskDesc || !taskAmount || !taskMinutes) return;
 
@@ -206,6 +225,8 @@ export function SubjectCard({ subject, sessions, onEdit, onDelete, onToggleTask,
             );
           }
 
+          const nextSession = getNextSession(task.id);
+
           return (
             <li key={task.id} className={task.completed ? 'completed' : ''}>
               <label>
@@ -222,6 +243,11 @@ export function SubjectCard({ subject, sessions, onEdit, onDelete, onToggleTask,
                     {sessionStats.total > 0 && (
                       <small className="task-sessions">
                         {sessionStats.completed}/{sessionStats.total} sessies
+                      </small>
+                    )}
+                    {nextSession && (
+                      <small className="task-scheduled">
+                        📅 {formatDateShort(nextSession.date)} {nextSession.hour}:00
                       </small>
                     )}
                   </div>

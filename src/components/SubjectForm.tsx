@@ -124,7 +124,7 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
               type="number"
               value={taskAmount}
               onChange={e => setTaskAmount(e.target.value)}
-              placeholder={isVideoUnit ? "Minuten" : "Aantal"}
+              placeholder="Aantal"
               min="1"
               className="form-amount-input"
             />

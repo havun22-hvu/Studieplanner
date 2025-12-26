@@ -194,6 +194,7 @@ export function Settings({ settings, subjects, sessions, onSave, onClose }: Prop
               <button onClick={copyInviteCode} className="btn-small">
                 {inviteCopied ? 'Gekopieerd!' : 'Kopieer'}
               </button>
+              <p className="invite-hint">Laat je mentor deze code binnen 24 uur invoeren. Voor een extra mentor maak je een nieuwe code aan.</p>
             </div>
           ) : (
             <button onClick={generateInvite} className="btn-secondary">

@@ -1756,6 +1756,7 @@ body {
   padding: 0.75rem;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
+  overflow-x: auto;
 }
 
 .task-pool h3 {
@@ -3040,15 +3041,12 @@ input[type="time"] {
   margin-top: 0.5rem;
 }
 
-/* Mentor Vakken View - horizontaal scrollbaar */
+/* Mentor Vakken View - verticaal */
 .subjects-view {
   display: flex;
-  flex-wrap: nowrap;
+  flex-direction: column;
   gap: 0.75rem;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
   padding: 0.5rem;
-  padding-bottom: 1rem;
 }
 
 .subject-card-mentor {
@@ -3057,8 +3055,6 @@ input[type="time"] {
   padding: 1rem;
   border-left: 4px solid;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  min-width: 220px;
-  flex-shrink: 0;
 }
 
 .subject-header-mentor {

@@ -18,6 +18,7 @@ import type { CatchUpSuggestion } from './utils/planning';
 import { CatchUpModal } from './components/CatchUpModal';
 import { AuthScreen } from './components/AuthScreen';
 import { useAuth } from './contexts/AuthContext';
+import { usePWA } from './contexts/PWAContext';
 import { api } from './services/api';
 import './App.css';
 
@@ -102,6 +103,9 @@ function StudentApp() {
   const { user } = useAuth();
   const { studentCode } = useParams();
   const navigate = useNavigate();
+  const { checkForUpdate, lastUpdateCheck } = usePWA();
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
 
   // Verify user matches route
   useEffect(() => {
@@ -243,6 +247,21 @@ function StudentApp() {
     localStorage.setItem('studieplanner-last-catchup-check', today);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
+
+  const handleCheckUpdate = async () => {
+    setIsCheckingUpdate(true);
+    setUpdateMessage(null);
+    try {
+      await checkForUpdate();
+      setUpdateMessage('App wordt herladen...');
+      localStorage.setItem('showAboutAfterUpdate', 'true');
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    } catch {
+      setIsCheckingUpdate(false);
+    }
+  };
 
   const handleAcceptCatchUp = (subjectId: string, extraSessions: { date: string; minutes: number }[]) => {
     const subject = subjects.find(s => s.id === subjectId);
@@ -784,6 +803,17 @@ function StudentApp() {
                 <p>✓ Voortgang bijhouden</p>
                 <p>✓ Mentor koppeling</p>
               </div>
+              <button
+                onClick={handleCheckUpdate}
+                className="btn-check-update"
+                disabled={isCheckingUpdate}
+              >
+                {isCheckingUpdate ? 'Controleren...' : 'Controleer op updates'}
+              </button>
+              {updateMessage && <p className="success-text">{updateMessage}</p>}
+              {lastUpdateCheck && (
+                <p className="muted-text">Laatst: {lastUpdateCheck.toLocaleTimeString()}</p>
+              )}
               <p className="copyright">© 2025 Havun</p>
             </div>
             <div className="about-actions">

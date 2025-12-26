@@ -14,15 +14,13 @@ interface Props {
 }
 
 export function Settings({ settings, subjects, sessions, onSave, onClose }: Props) {
-  const { canInstall, isInstalled, install, checkForUpdate, lastUpdateCheck } = usePWA();
+  const { canInstall, isInstalled, install } = usePWA();
   const { permission, requestPermission, isSupported } = useNotifications(settings);
   const { logout } = useAuth();
 
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [inviteCopied, setInviteCopied] = useState(false);
   const [mentors, setMentors] = useState<Array<{ id: number; name: string }>>([]);
-  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
-  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
@@ -71,22 +69,6 @@ export function Settings({ settings, subjects, sessions, onSave, onClose }: Prop
       navigator.clipboard.writeText(inviteCode);
       setInviteCopied(true);
       setTimeout(() => setInviteCopied(false), 2000);
-    }
-  };
-
-  const handleCheckUpdate = async () => {
-    setIsCheckingUpdate(true);
-    setUpdateMessage(null);
-    try {
-      await checkForUpdate();
-      // Force reload to get latest version
-      setUpdateMessage('App wordt herladen...');
-      localStorage.setItem('showAboutAfterUpdate', 'true');
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
-    } catch {
-      setIsCheckingUpdate(false);
     }
   };
 
@@ -220,22 +202,9 @@ export function Settings({ settings, subjects, sessions, onSave, onClose }: Prop
             >
               {isSyncing ? 'Syncen...' : 'Sync'}
             </button>
-            <button
-              onClick={handleCheckUpdate}
-              className="btn-secondary"
-              disabled={isCheckingUpdate}
-            >
-              {isCheckingUpdate ? 'Controleren...' : 'Updates'}
-            </button>
           </div>
           {syncMessage && (
             <p className="success-text">{syncMessage}</p>
-          )}
-          {lastUpdateCheck && (
-            <p className="muted-text">Laatst gecontroleerd: {lastUpdateCheck.toLocaleTimeString()}</p>
-          )}
-          {updateMessage && (
-            <p className="success-text">{updateMessage}</p>
           )}
         </div>
 

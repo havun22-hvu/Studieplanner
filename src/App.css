@@ -1561,13 +1561,19 @@ body {
 }
 
 .settings-header .close-btn {
-  background: none;
+  background: var(--border);
   border: none;
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
-  color: var(--text-light, #666);
-  padding: 0.25rem;
+  color: var(--text);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.settings-header .close-btn:hover {
+  background: var(--text-muted);
+  color: white;
 }
 
 .day-picker {

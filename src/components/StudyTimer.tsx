@@ -168,17 +168,25 @@ export function StudyTimer({ session, subject, task, settings, onComplete, onCan
   }, [elapsedSeconds, pomodoroEnabled, isRunning, isPaused]);
 
   // Pomodoro phase transitions
+  const isTransitioningRef = useRef(false);
+
   useEffect(() => {
     if (!pomodoroEnabled || !isRunning || isPaused) return;
+    if (isTransitioningRef.current) return;
 
-    if (phaseSeconds >= phaseTargetSeconds) {
+    // Calculate target based on current phase
+    const currentPhaseTarget = pomodoroPhase === 'work' ? workMinutes * 60 : breakMinutes * 60;
+
+    if (phaseSeconds >= currentPhaseTarget) {
+      isTransitioningRef.current = true;
+
       if (pomodoroPhase === 'work') {
         // Work phase done -> Start break
         playSound('break');
-        setPomodoroPhase('break');
-        setPomodoroCount(c => c + 1);
         phaseStartRef.current = Date.now();
+        setPomodoroCount(c => c + 1);
         setPhaseSeconds(0);
+        setPomodoroPhase('break');
 
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification('Pauze tijd! ☕', {
@@ -189,9 +197,9 @@ export function StudyTimer({ session, subject, task, settings, onComplete, onCan
       } else {
         // Break done -> Back to work
         playSound('beep');
-        setPomodoroPhase('work');
         phaseStartRef.current = Date.now();
         setPhaseSeconds(0);
+        setPomodoroPhase('work');
 
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification('Terug aan het werk! 📚', {
@@ -201,8 +209,13 @@ export function StudyTimer({ session, subject, task, settings, onComplete, onCan
         }
       }
       saveTimerState();
+
+      // Reset transition flag after state updates are processed
+      setTimeout(() => {
+        isTransitioningRef.current = false;
+      }, 100);
     }
-  }, [phaseSeconds, phaseTargetSeconds, pomodoroPhase, pomodoroEnabled, isRunning, isPaused, workMinutes, breakMinutes, saveTimerState]);
+  }, [phaseSeconds, pomodoroPhase, pomodoroEnabled, isRunning, isPaused, workMinutes, breakMinutes, saveTimerState]);
 
   // Check intervals and time-up
   useEffect(() => {

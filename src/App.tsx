@@ -19,7 +19,6 @@ import { CatchUpModal } from './components/CatchUpModal';
 import { AuthScreen } from './components/AuthScreen';
 import { useAuth } from './contexts/AuthContext';
 import { usePWA } from './contexts/PWAContext';
-import { api } from './services/api';
 import './App.css';
 
 type View = 'subjects' | 'planning' | 'stats';

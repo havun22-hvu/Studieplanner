@@ -259,6 +259,20 @@ class ApiService {
       knowledgeRating: number | null;
     }>>('/student/sessions');
   }
+
+  // Sync settings to backend
+  async syncSettings(settings: {
+    alarmEnabled?: boolean;
+    alarmMinutesBefore?: number;
+    pomodoroEnabled?: boolean;
+    pomodoroWorkMinutes?: number;
+    pomodoroBreakMinutes?: number;
+  }) {
+    return this.request<{ message: string }>('/student/settings/sync', {
+      method: 'POST',
+      body: JSON.stringify(settings),
+    });
+  }
 }
 
 export const api = new ApiService();

@@ -25,6 +25,8 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onRest
   const [isSyncing, setIsSyncing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [alarmMinutes, setAlarmMinutes] = useState(settings.alarmMinutesBefore ?? 10);
+  const [alarmSaved, setAlarmSaved] = useState(false);
 
   useEffect(() => {
     loadMentors();
@@ -199,7 +201,10 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onRest
               <input
                 type="checkbox"
                 checked={settings.alarmEnabled ?? false}
-                onChange={e => onSave({ ...settings, alarmEnabled: e.target.checked })}
+                onChange={e => {
+                  onSave({ ...settings, alarmEnabled: e.target.checked });
+                  setAlarmSaved(false);
+                }}
               />
               <span>Alarm voor geplande taken</span>
             </label>
@@ -207,13 +212,32 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onRest
               <div className="alarm-minutes-setting">
                 <input
                   type="number"
-                  value={settings.alarmMinutesBefore ?? 10}
-                  onChange={e => onSave({ ...settings, alarmMinutesBefore: parseInt(e.target.value) || 10 })}
+                  value={alarmMinutes}
+                  onChange={e => {
+                    setAlarmMinutes(parseInt(e.target.value) || 10);
+                    setAlarmSaved(false);
+                  }}
                   min="1"
                   max="60"
                   className="alarm-minutes-input"
                 />
-                <span>minuten van tevoren</span>
+                <span>min van tevoren</span>
+                <button
+                  onClick={async () => {
+                    onSave({ ...settings, alarmMinutesBefore: alarmMinutes });
+                    try {
+                      await api.syncSettings({ alarmEnabled: true, alarmMinutesBefore: alarmMinutes });
+                      setAlarmSaved(true);
+                      setTimeout(() => setAlarmSaved(false), 2000);
+                    } catch (err) {
+                      console.error('Failed to sync settings:', err);
+                    }
+                  }}
+                  className="btn-alarm-save"
+                >
+                  OK
+                </button>
+                {alarmSaved && <span className="saved-indicator">✓ Opgeslagen</span>}
               </div>
             )}
           </div>

@@ -173,19 +173,28 @@ function StudentApp() {
       const currentMinute = now.getMinutes();
       const todayStr = now.toISOString().split('T')[0];
       const minutesBefore = settings.alarmMinutesBefore || 10;
+      const alarmKey = 'studieplanner-alarms-fired';
+      const firedAlarms = JSON.parse(localStorage.getItem(alarmKey) || '{}');
 
       sessions.forEach(session => {
-        if (session.completed || session.hour === undefined) return;
+        // Skip if no hour set (still in shelf) or completed
+        if (session.completed || session.hour === undefined || session.hour === null) return;
         if (session.date !== todayStr) return;
 
         const sessionMinutes = session.hour * 60;
         const currentMinutes = currentHour * 60 + currentMinute;
-
-        // Check if we're exactly at the alarm time (within this minute)
         const alarmTime = sessionMinutes - minutesBefore;
-        if (currentMinutes === alarmTime) {
+
+        // Check if we're at or past alarm time but before session starts
+        // And haven't fired this alarm yet today
+        const alarmId = `${session.id}-${todayStr}`;
+        if (currentMinutes >= alarmTime && currentMinutes < sessionMinutes && !firedAlarms[alarmId]) {
           const subject = subjects.find(s => s.id === session.subjectId);
           const task = subject?.tasks.find(t => t.id === session.taskId);
+
+          // Mark as fired
+          firedAlarms[alarmId] = true;
+          localStorage.setItem(alarmKey, JSON.stringify(firedAlarms));
 
           // Show notification
           if ('Notification' in window && Notification.permission === 'granted') {
@@ -814,7 +823,7 @@ function StudentApp() {
             <div className="about-content">
               <p className="app-name"><strong>StudiePlanner</strong></p>
               <p className="app-tagline">Plan je studie slim en haal je deadlines</p>
-              <p className="app-version">Versie 2.9.9</p>
+              <p className="app-version">Versie 3.0.0</p>
               <div className="about-features">
                 <p>✓ Automatische studieplanning</p>
                 <p>✓ Pomodoro timer</p>

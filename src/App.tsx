@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import type { Subject, PlannedSession, Settings as SettingsType, StudyTask } from './types';
@@ -118,32 +118,8 @@ function StudentApp() {
   const [sessions, setSessions] = useLocalStorage<PlannedSession[]>('studieplanner-sessions', []);
   const [settings, setSettings] = useLocalStorage<SettingsType>('studieplanner-settings', DEFAULT_SETTINGS);
 
-  // Skip sync flag - used after restore to prevent overwriting backend data
-  const skipSyncRef = useRef(false);
-
-  // Sync subjects and sessions to backend when they change
-  // Sessions sync MUST wait for subjects sync to complete (for ID mappings)
-  useEffect(() => {
-    // Skip sync if we just restored from backend
-    if (skipSyncRef.current) {
-      skipSyncRef.current = false;
-      return;
-    }
-
-    const syncToBackend = async () => {
-      try {
-        if (subjects.length > 0) {
-          await api.syncSubjects(subjects);
-        }
-        if (sessions.length > 0) {
-          await api.syncSessions(sessions);
-        }
-      } catch (err) {
-        console.error('Failed to sync:', err);
-      }
-    };
-    syncToBackend();
-  }, [subjects, sessions]);
+  // Auto-sync is DISABLED to prevent data loss
+  // User must manually sync via Settings > Sync button
 
   const [view, setView] = useState<View>('subjects');
   const [showForm, setShowForm] = useState(false);
@@ -751,8 +727,6 @@ function StudentApp() {
           }}
           onClose={() => setShowSettings(false)}
           onRestore={(restoredSubjects, restoredSessions) => {
-            // Skip auto-sync to prevent overwriting restored data
-            skipSyncRef.current = true;
             setSubjects(restoredSubjects);
             setSessions(restoredSessions);
           }}
@@ -823,7 +797,7 @@ function StudentApp() {
             <div className="about-content">
               <p className="app-name"><strong>StudiePlanner</strong></p>
               <p className="app-tagline">Plan je studie slim en haal je deadlines</p>
-              <p className="app-version">Versie 3.0.0</p>
+              <p className="app-version">Versie 3.0.1</p>
               <div className="about-features">
                 <p>✓ Automatische studieplanning</p>
                 <p>✓ Pomodoro timer</p>

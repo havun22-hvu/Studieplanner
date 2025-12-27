@@ -43,6 +43,8 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggered = useRef(false);
   const pressStartPos = useRef<{ x: number; y: number } | null>(null);
+  const isDraggingRef = useRef(false); // Ref for immediate access in event handlers
+  const dragItemRef = useRef<DragItem | null>(null);
   const LONG_PRESS_DELAY = 1500; // 1.5 seconds
   const MOVE_THRESHOLD = 10; // pixels before canceling long press
 
@@ -140,8 +142,11 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
     longPressTriggered.current = false;
     longPressTimer.current = setTimeout(() => {
       longPressTriggered.current = true;
+      const item = { type: 'session' as const, session };
+      isDraggingRef.current = true;
+      dragItemRef.current = item;
       setIsDragging(true);
-      setDragItem({ type: 'session', session });
+      setDragItem(item);
       setDragPosition({ x: clientX, y: clientY });
     }, LONG_PRESS_DELAY);
   };
@@ -159,9 +164,11 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
     }
   };
 
-  // Handle touch/mouse end - cancel long press
+  // Handle touch/mouse end - cancel long press (but don't cancel active drag)
   const handlePressEnd = () => {
-    cancelLongPress();
+    if (!isDraggingRef.current) {
+      cancelLongPress();
+    }
     pressStartPos.current = null;
   };
 
@@ -174,24 +181,30 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
     longPressTriggered.current = false;
     longPressTimer.current = setTimeout(() => {
       longPressTriggered.current = true;
+      const item = { type: 'session' as const, session, subject };
+      isDraggingRef.current = true;
+      dragItemRef.current = item;
       setIsDragging(true);
-      setDragItem({ type: 'session', session, subject });
+      setDragItem(item);
       setDragPosition({ x: clientX, y: clientY });
     }, LONG_PRESS_DELAY);
   };
 
   const handleDragMove = useCallback((e: MouseEvent | TouchEvent) => {
-    if (!isDragging) return;
+    if (!isDraggingRef.current) return;
     e.preventDefault();
 
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
     setDragPosition({ x: clientX, y: clientY });
-  }, [isDragging]);
+  }, []);
 
   const handleDragEnd = useCallback((e: MouseEvent | TouchEvent) => {
-    if (!isDragging || !dragItem) {
+    const currentDragItem = dragItemRef.current;
+    if (!isDraggingRef.current || !currentDragItem) {
+      isDraggingRef.current = false;
+      dragItemRef.current = null;
       setIsDragging(false);
       setDragItem(null);
       return;
@@ -207,9 +220,11 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
       if (clientX >= poolRect.left && clientX <= poolRect.right &&
           clientY >= poolRect.top && clientY <= poolRect.bottom) {
         // Return to shelf - remove hour
-        if (dragItem.session) {
-          onUpdateSession(dragItem.session.id, dragItem.session.date, undefined);
+        if (currentDragItem.session) {
+          onUpdateSession(currentDragItem.session.id, currentDragItem.session.date, undefined);
         }
+        isDraggingRef.current = false;
+        dragItemRef.current = null;
         setIsDragging(false);
         setDragItem(null);
         return;
@@ -236,32 +251,33 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
       }
     });
 
-    if (targetDate && dragItem.session) {
-      onUpdateSession(dragItem.session.id, targetDate, targetHour);
+    if (targetDate && currentDragItem.session) {
+      onUpdateSession(currentDragItem.session.id, targetDate, targetHour);
     }
 
+    isDraggingRef.current = false;
+    dragItemRef.current = null;
     setIsDragging(false);
     setDragItem(null);
-  }, [isDragging, dragItem, onUpdateSession]);
+  }, [onUpdateSession]);
 
+  // Add global event listeners at mount to handle drag immediately when long press triggers
   useEffect(() => {
-    if (isDragging) {
-      const moveHandler = (e: MouseEvent | TouchEvent) => handleDragMove(e);
-      const endHandler = (e: MouseEvent | TouchEvent) => handleDragEnd(e);
+    const moveHandler = (e: MouseEvent | TouchEvent) => handleDragMove(e);
+    const endHandler = (e: MouseEvent | TouchEvent) => handleDragEnd(e);
 
-      window.addEventListener('mousemove', moveHandler);
-      window.addEventListener('mouseup', endHandler);
-      window.addEventListener('touchmove', moveHandler, { passive: false });
-      window.addEventListener('touchend', endHandler);
+    window.addEventListener('mousemove', moveHandler);
+    window.addEventListener('mouseup', endHandler);
+    window.addEventListener('touchmove', moveHandler, { passive: false });
+    window.addEventListener('touchend', endHandler);
 
-      return () => {
-        window.removeEventListener('mousemove', moveHandler);
-        window.removeEventListener('mouseup', endHandler);
-        window.removeEventListener('touchmove', moveHandler);
-        window.removeEventListener('touchend', endHandler);
-      };
-    }
-  }, [isDragging, handleDragMove, handleDragEnd]);
+    return () => {
+      window.removeEventListener('mousemove', moveHandler);
+      window.removeEventListener('mouseup', endHandler);
+      window.removeEventListener('touchmove', moveHandler);
+      window.removeEventListener('touchend', endHandler);
+    };
+  }, [handleDragMove, handleDragEnd]);
 
   const unscheduledSessions = getUnscheduledSessions();
 

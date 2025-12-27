@@ -732,6 +732,10 @@ function StudentApp() {
             regeneratePlanning();
           }}
           onClose={() => setShowSettings(false)}
+          onRestore={(restoredSubjects, restoredSessions) => {
+            setSubjects(restoredSubjects);
+            setSessions(restoredSessions);
+          }}
         />
       )}
 

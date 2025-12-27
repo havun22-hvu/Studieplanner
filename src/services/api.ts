@@ -216,6 +216,41 @@ class ApiService {
       body: JSON.stringify({ sessions }),
     });
   }
+
+  // Restore data from backend
+  async getSubjects() {
+    return this.request<Array<{
+      id: string;
+      name: string;
+      color: string;
+      examDate: string;
+      tasks: Array<{
+        id: string;
+        description: string;
+        estimatedMinutes: number;
+        plannedAmount: number;
+        unit: string;
+        completed: boolean;
+      }>;
+    }>>('/student/subjects');
+  }
+
+  async getSessions() {
+    return this.request<Array<{
+      id: string;
+      date: string;
+      taskId: string;
+      subjectId: string;
+      hour: number | null;
+      minutesPlanned: number;
+      minutesActual: number | null;
+      amountPlanned: number;
+      amountActual: number | null;
+      unit: string;
+      completed: boolean;
+      knowledgeRating: number | null;
+    }>>('/student/sessions');
+  }
 }
 
 export const api = new ApiService();

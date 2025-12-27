@@ -11,9 +11,10 @@ interface Props {
   sessions: PlannedSession[];
   onSave: (settings: SettingsType) => void;
   onClose: () => void;
+  onRestore: (subjects: Subject[], sessions: PlannedSession[]) => void;
 }
 
-export function Settings({ settings, subjects, sessions, onSave, onClose }: Props) {
+export function Settings({ settings, subjects, sessions, onSave, onClose, onRestore }: Props) {
   const { canInstall, isInstalled, install } = usePWA();
   const { permission, requestPermission, isSupported } = useNotifications(settings);
   const { logout } = useAuth();
@@ -22,6 +23,7 @@ export function Settings({ settings, subjects, sessions, onSave, onClose }: Prop
   const [inviteCopied, setInviteCopied] = useState(false);
   const [mentors, setMentors] = useState<Array<{ id: number; name: string }>>([]);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -43,6 +45,61 @@ export function Settings({ settings, subjects, sessions, onSave, onClose }: Prop
       console.error('Sync failed:', err);
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    if (!confirm('Weet je zeker dat je je planning wilt herstellen vanaf de server? Dit overschrijft je huidige lokale data.')) {
+      return;
+    }
+    setIsRestoring(true);
+    setSyncMessage(null);
+    try {
+      const [subjectsData, sessionsData] = await Promise.all([
+        api.getSubjects(),
+        api.getSessions()
+      ]);
+
+      // Convert backend format to frontend format
+      const restoredSubjects = subjectsData.map(s => ({
+        id: s.id,
+        name: s.name,
+        color: s.color,
+        examDate: s.examDate,
+        tasks: s.tasks.map(t => ({
+          id: t.id,
+          subjectId: s.id,
+          description: t.description,
+          estimatedMinutes: t.estimatedMinutes,
+          plannedAmount: t.plannedAmount,
+          unit: t.unit as 'blz' | 'opdrachten' | 'min video',
+          completed: t.completed,
+        }))
+      }));
+
+      const restoredSessions = sessionsData.map(s => ({
+        id: s.id,
+        date: s.date,
+        taskId: s.taskId,
+        subjectId: s.subjectId,
+        hour: s.hour ?? undefined,
+        minutesPlanned: s.minutesPlanned,
+        minutesActual: s.minutesActual ?? undefined,
+        amountPlanned: s.amountPlanned,
+        amountActual: s.amountActual ?? undefined,
+        unit: s.unit,
+        completed: s.completed,
+        knowledgeRating: s.knowledgeRating ?? undefined,
+      }));
+
+      onRestore(restoredSubjects, restoredSessions);
+      setSyncMessage(`Hersteld: ${restoredSubjects.length} vakken, ${restoredSessions.length} sessies`);
+      setTimeout(() => setSyncMessage(null), 5000);
+    } catch (err) {
+      setSyncMessage('Herstel mislukt, probeer opnieuw');
+      console.error('Restore failed:', err);
+    } finally {
+      setIsRestoring(false);
     }
   };
 
@@ -133,27 +190,6 @@ export function Settings({ settings, subjects, sessions, onSave, onClose }: Prop
             </button>
           )}
 
-          {isSupported && permission === 'granted' && (
-            <div className="form-group">
-              <label className="toggle-label">
-                <input
-                  type="checkbox"
-                  checked={settings.reminderEnabled ?? false}
-                  onChange={e => onSave({ ...settings, reminderEnabled: e.target.checked })}
-                />
-                <span>Dagelijkse herinnering</span>
-              </label>
-              {settings.reminderEnabled && (
-                <input
-                  type="time"
-                  value={settings.reminderTime ?? '16:00'}
-                  onChange={e => onSave({ ...settings, reminderTime: e.target.value })}
-                  className="time-input"
-                />
-              )}
-            </div>
-          )}
-
           {isSupported && permission === 'denied' && (
             <p className="error-text">Notificaties geblokkeerd in browser</p>
           )}
@@ -222,9 +258,16 @@ export function Settings({ settings, subjects, sessions, onSave, onClose }: Prop
             <button
               onClick={handleSync}
               className="btn-secondary"
-              disabled={isSyncing}
+              disabled={isSyncing || isRestoring}
             >
               {isSyncing ? 'Syncen...' : 'Sync'}
+            </button>
+            <button
+              onClick={handleRestore}
+              className="btn-secondary"
+              disabled={isSyncing || isRestoring}
+            >
+              {isRestoring ? 'Herstellen...' : 'Herstel'}
             </button>
           </div>
           {syncMessage && (

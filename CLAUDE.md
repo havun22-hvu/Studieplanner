@@ -175,6 +175,8 @@ interface Settings {
   studentName: string;
   mentors: Mentor[];
   shareCode?: string;   // Voor mentor deellink
+  alarmEnabled?: boolean;
+  alarmMinutesBefore?: number; // default 10
 }
 ```
 
@@ -240,6 +242,12 @@ npm run build
 - [x] Update knop herlaadt app direct (PWA fix)
 - [x] Mentor vakken: taakdetails tonen (hoeveelheid, eenheid, tijd)
 - [x] Swipe navigatie tussen Vakken/Agenda/Stats (op header)
+- [x] Long press (1.5s) voor drag in agenda, anders scrollen
+- [x] Sticky task-pool boven agenda
+- [x] Dag detail modal bij klik op dag header
+- [x] Datum/tijd tonen bij taken in Vakken tab
+- [x] Update knop verplaatst van Instellingen naar About modal
+- [x] Globale alarm instelling (aan/uit + minuten van tevoren)
 
 **Uitgeschakeld (wacht op werkende API):**
 - [ ] SOMtoday integratie (code aanwezig in SchoolSystemSettings.tsx)

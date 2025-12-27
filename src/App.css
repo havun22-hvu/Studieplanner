@@ -1941,31 +1941,10 @@ body {
   z-index: 5;
 }
 
-.task-pool-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.25rem;
-}
-
 .task-pool h3 {
   font-size: 0.75rem;
   color: var(--text-muted);
-  margin: 0;
-}
-
-.btn-auto-schedule {
-  font-size: 0.7rem;
-  padding: 0.2rem 0.5rem;
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-auto-schedule:hover {
-  background: var(--primary-dark);
+  margin-bottom: 0.25rem;
 }
 
 .task-chips {

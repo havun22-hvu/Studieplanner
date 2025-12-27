@@ -8,7 +8,6 @@ interface Props {
   onCreateSession: (session: PlannedSession) => void;
   onSessionClick: (session: PlannedSession) => void;
   onToggleAlarm: (sessionId: string) => void;
-  onAutoSchedule?: () => void;
   readOnly?: boolean;
 }
 
@@ -25,7 +24,7 @@ interface DragItem {
   subject?: Subject;
 }
 
-export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSession: _onCreateSession, onSessionClick, onToggleAlarm, onAutoSchedule, readOnly = false }: Props) {
+export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSession: _onCreateSession, onSessionClick, onToggleAlarm, readOnly = false }: Props) {
   // Skip drag functionality in readOnly mode (mentor view)
   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
     const today = new Date();
@@ -283,14 +282,7 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
     <div className="agenda-view">
       {/* Unscheduled sessions pool - always visible for drag back */}
       <div className="task-pool">
-        <div className="task-pool-header">
-          <h3>Te plannen {unscheduledSessions.length > 0 && `(${unscheduledSessions.length})`}</h3>
-          {!readOnly && unscheduledSessions.length > 0 && onAutoSchedule && (
-            <button onClick={onAutoSchedule} className="btn-auto-schedule">
-              Auto-plannen
-            </button>
-          )}
-        </div>
+        <h3>Te plannen {unscheduledSessions.length > 0 && `(${unscheduledSessions.length})`}</h3>
         <div className="task-chips">
           {unscheduledSessions.length === 0 ? (
             <span className="pool-empty">Sleep taken hierheen om te verwijderen uit agenda</span>

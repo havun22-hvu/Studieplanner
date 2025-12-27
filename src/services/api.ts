@@ -211,9 +211,17 @@ class ApiService {
     completed: boolean;
     knowledgeRating?: number;
   }>) {
+    // Convert undefined to null for proper JSON serialization
+    const sessionsWithNulls = sessions.map(s => ({
+      ...s,
+      hour: s.hour ?? null,
+      minutesActual: s.minutesActual ?? null,
+      amountActual: s.amountActual ?? null,
+      knowledgeRating: s.knowledgeRating ?? null,
+    }));
     return this.request<{ message: string }>('/student/sessions/sync', {
       method: 'POST',
-      body: JSON.stringify({ sessions }),
+      body: JSON.stringify({ sessions: sessionsWithNulls }),
     });
   }
 

@@ -513,6 +513,40 @@ function StudentApp() {
     }));
   };
 
+  // Auto-schedule unplanned sessions
+  const autoScheduleSessions = () => {
+    const unscheduled = sessions.filter(s => s.hour === undefined || s.hour === null);
+    if (unscheduled.length === 0) return;
+
+    // Group sessions by date
+    const byDate: Record<string, typeof unscheduled> = {};
+    unscheduled.forEach(s => {
+      if (!byDate[s.date]) byDate[s.date] = [];
+      byDate[s.date].push(s);
+    });
+
+    // Schedule sessions: start at 14:00, each session gets a time slot
+    const updatedSessions = sessions.map(session => {
+      if (session.hour !== undefined && session.hour !== null) return session;
+
+      const dateGroup = byDate[session.date];
+      if (!dateGroup) return session;
+
+      const index = dateGroup.findIndex(s => s.id === session.id);
+      // Start at 14:00, calculate hour based on cumulative minutes
+      let startHour = 14;
+      for (let i = 0; i < index; i++) {
+        startHour += Math.ceil(dateGroup[i].minutesPlanned / 60);
+      }
+      // Cap at 20:00
+      if (startHour > 20) startHour = 20;
+
+      return { ...session, hour: startHour };
+    });
+
+    setSessions(updatedSessions);
+  };
+
   // Handle session click - open timer
   const handleSessionClick = (session: PlannedSession) => {
     if (session.completed) {
@@ -714,6 +748,7 @@ function StudentApp() {
               onCreateSession={(session) => setSessions([...sessions, session])}
               onSessionClick={handleSessionClick}
               onToggleAlarm={toggleAlarm}
+              onAutoSchedule={autoScheduleSessions}
             />
             {subjects.length > 0 && (
               <button
@@ -814,7 +849,7 @@ function StudentApp() {
             <div className="about-content">
               <p className="app-name"><strong>StudiePlanner</strong></p>
               <p className="app-tagline">Plan je studie slim en haal je deadlines</p>
-              <p className="app-version">Versie 2.9.7</p>
+              <p className="app-version">Versie 2.9.8</p>
               <div className="about-features">
                 <p>✓ Automatische studieplanning</p>
                 <p>✓ Pomodoro timer</p>

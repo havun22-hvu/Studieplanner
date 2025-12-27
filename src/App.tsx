@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Routes, Route, Navigate, useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import type { Subject, PlannedSession, Settings as SettingsType, StudyTask } from './types';
@@ -118,9 +118,18 @@ function StudentApp() {
   const [sessions, setSessions] = useLocalStorage<PlannedSession[]>('studieplanner-sessions', []);
   const [settings, setSettings] = useLocalStorage<SettingsType>('studieplanner-settings', DEFAULT_SETTINGS);
 
+  // Skip sync flag - used after restore to prevent overwriting backend data
+  const skipSyncRef = useRef(false);
+
   // Sync subjects and sessions to backend when they change
   // Sessions sync MUST wait for subjects sync to complete (for ID mappings)
   useEffect(() => {
+    // Skip sync if we just restored from backend
+    if (skipSyncRef.current) {
+      skipSyncRef.current = false;
+      return;
+    }
+
     const syncToBackend = async () => {
       try {
         if (subjects.length > 0) {
@@ -733,6 +742,8 @@ function StudentApp() {
           }}
           onClose={() => setShowSettings(false)}
           onRestore={(restoredSubjects, restoredSessions) => {
+            // Skip auto-sync to prevent overwriting restored data
+            skipSyncRef.current = true;
             setSubjects(restoredSubjects);
             setSessions(restoredSessions);
           }}

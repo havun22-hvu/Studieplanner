@@ -1998,7 +1998,18 @@ body {
   box-shadow: 0 1px 4px rgba(0,0,0,0.2);
   min-width: 70px;
   user-select: none;
-  touch-action: pan-x;
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+
+/* Prevent all touch actions when dragging */
+body.is-dragging {
+  touch-action: none;
+  overflow: hidden;
+}
+
+body.is-dragging * {
+  touch-action: none !important;
 }
 
 .task-chip:active {
@@ -2301,6 +2312,8 @@ body {
   z-index: 10;
   user-select: none;
   touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;

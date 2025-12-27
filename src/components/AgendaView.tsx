@@ -145,14 +145,20 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
       const item = { type: 'session' as const, session };
       isDraggingRef.current = true;
       dragItemRef.current = item;
+      document.body.classList.add('is-dragging');
       setIsDragging(true);
       setDragItem(item);
       setDragPosition({ x: clientX, y: clientY });
     }, LONG_PRESS_DELAY);
   };
 
-  // Handle touch/mouse move - cancel long press if moved too much
+  // Handle touch/mouse move - cancel long press if moved too much, or prevent scroll if dragging
   const handlePressMove = (e: React.MouseEvent | React.TouchEvent) => {
+    // If already dragging, prevent default to stop scrolling
+    if (isDraggingRef.current) {
+      e.preventDefault();
+      return;
+    }
     if (longPressTimer.current && !longPressTriggered.current && pressStartPos.current) {
       const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
       const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
@@ -184,6 +190,7 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
       const item = { type: 'session' as const, session, subject };
       isDraggingRef.current = true;
       dragItemRef.current = item;
+      document.body.classList.add('is-dragging');
       setIsDragging(true);
       setDragItem(item);
       setDragPosition({ x: clientX, y: clientY });
@@ -200,13 +207,18 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
     setDragPosition({ x: clientX, y: clientY });
   }, []);
 
+  const cleanupDrag = useCallback(() => {
+    isDraggingRef.current = false;
+    dragItemRef.current = null;
+    document.body.classList.remove('is-dragging');
+    setIsDragging(false);
+    setDragItem(null);
+  }, []);
+
   const handleDragEnd = useCallback((e: MouseEvent | TouchEvent) => {
     const currentDragItem = dragItemRef.current;
     if (!isDraggingRef.current || !currentDragItem) {
-      isDraggingRef.current = false;
-      dragItemRef.current = null;
-      setIsDragging(false);
-      setDragItem(null);
+      cleanupDrag();
       return;
     }
 
@@ -223,10 +235,7 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
         if (currentDragItem.session) {
           onUpdateSession(currentDragItem.session.id, currentDragItem.session.date, undefined);
         }
-        isDraggingRef.current = false;
-        dragItemRef.current = null;
-        setIsDragging(false);
-        setDragItem(null);
+        cleanupDrag();
         return;
       }
     }
@@ -255,11 +264,8 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
       onUpdateSession(currentDragItem.session.id, targetDate, targetHour);
     }
 
-    isDraggingRef.current = false;
-    dragItemRef.current = null;
-    setIsDragging(false);
-    setDragItem(null);
-  }, [onUpdateSession]);
+    cleanupDrag();
+  }, [onUpdateSession, cleanupDrag]);
 
   // Add global event listeners at mount to handle drag immediately when long press triggers
   useEffect(() => {

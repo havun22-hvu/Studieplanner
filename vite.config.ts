@@ -30,10 +30,10 @@ export default defineConfig({
           }
         ]
       },
+      // Use versioned filename to bypass old cached sw.js
+      filename: 'sw-v2.js',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        // Use versioned filename to bypass old cached sw.js
-        swDest: 'sw-v2.js',
         // Force new SW to take over immediately
         skipWaiting: true,
         clientsClaim: true,

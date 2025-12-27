@@ -1180,6 +1180,26 @@ body {
   color: var(--text);
 }
 
+/* Subject Form Modal */
+.form-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.form-modal-content {
+  width: 100%;
+  max-width: 480px;
+  margin: 1rem 0;
+}
+
 /* Subject Form */
 .subject-form {
   background: var(--card);

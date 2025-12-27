@@ -167,6 +167,18 @@ function StudentApp() {
   const [timerSession, setTimerSession] = useState<PlannedSession | null>(null);
   const [timerMinutes, setTimerMinutes] = useState<number>(0);
 
+  // Block body scroll when form modal is open
+  useEffect(() => {
+    if (showForm) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showForm]);
+
   // Alarm check effect - uses global settings
   useEffect(() => {
     if (!settings.alarmEnabled) return;
@@ -711,11 +723,15 @@ function StudentApp() {
         )}
 
         {view === 'subjects' && showForm && (
-          <SubjectForm
-            onSave={saveSubject}
-            onCancel={() => { setShowForm(false); setEditingSubject(undefined); }}
-            editSubject={editingSubject}
-          />
+          <div className="form-modal-overlay">
+            <div className="form-modal-content">
+              <SubjectForm
+                onSave={saveSubject}
+                onCancel={() => { setShowForm(false); setEditingSubject(undefined); }}
+                editSubject={editingSubject}
+              />
+            </div>
+          </div>
         )}
 
         {view === 'planning' && (

@@ -69,8 +69,12 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="subject-form">
-      <h2>{editSubject ? 'Vak bewerken' : 'Nieuw vak toevoegen'}</h2>
+      <h2>
+        {editSubject ? 'Vak bewerken' : 'Nieuw vak'}
+        <button type="button" className="form-close-btn" onClick={onCancel}>&times;</button>
+      </h2>
 
+      <div className="form-body">
       <div className="form-group">
         <label>Vaknaam</label>
         <input
@@ -173,10 +177,10 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
       </div>
 
       <div className="form-actions">
-        <button type="button" onClick={onCancel} className="btn-secondary">Annuleren</button>
-        <button type="submit" className="btn-primary" disabled={!name || !examDate || tasks.length === 0}>
+        <button type="submit" className="btn-primary btn-full" disabled={!name || !examDate || tasks.length === 0}>
           Opslaan
         </button>
+      </div>
       </div>
     </form>
   );

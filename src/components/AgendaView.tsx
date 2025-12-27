@@ -45,7 +45,7 @@ export function AgendaView({ subjects, sessions, onUpdateSession, onCreateSessio
   const pressStartPos = useRef<{ x: number; y: number } | null>(null);
   const isDraggingRef = useRef(false); // Ref for immediate access in event handlers
   const dragItemRef = useRef<DragItem | null>(null);
-  const LONG_PRESS_DELAY = 1500; // 1.5 seconds
+  const LONG_PRESS_DELAY = 800; // 0.8 seconds
   const MOVE_THRESHOLD = 10; // pixels before canceling long press
 
   // Scroll to default hour (8:00) on mount

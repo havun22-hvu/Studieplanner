@@ -154,24 +154,27 @@ function StudentApp() {
   const [timerSession, setTimerSession] = useState<PlannedSession | null>(null);
   const [timerMinutes, setTimerMinutes] = useState<number>(0);
 
-  // Alarm check effect
+  // Alarm check effect - uses global settings
   useEffect(() => {
+    if (!settings.alarmEnabled) return;
+
     const checkAlarms = () => {
       const now = new Date();
       const currentHour = now.getHours();
       const currentMinute = now.getMinutes();
       const todayStr = now.toISOString().split('T')[0];
+      const minutesBefore = settings.alarmMinutesBefore || 10;
 
       sessions.forEach(session => {
-        if (!session.alarm?.enabled || session.completed || session.hour === undefined) return;
+        if (session.completed || session.hour === undefined) return;
         if (session.date !== todayStr) return;
 
         const sessionMinutes = session.hour * 60;
         const currentMinutes = currentHour * 60 + currentMinute;
-        const minutesBefore = session.alarm.minutesBefore || 5;
 
-        // Check if we're within the alarm window
-        if (currentMinutes >= sessionMinutes - minutesBefore && currentMinutes < sessionMinutes) {
+        // Check if we're exactly at the alarm time (within this minute)
+        const alarmTime = sessionMinutes - minutesBefore;
+        if (currentMinutes === alarmTime) {
           const subject = subjects.find(s => s.id === session.subjectId);
           const task = subject?.tasks.find(t => t.id === session.taskId);
 
@@ -183,11 +186,9 @@ function StudentApp() {
             });
           }
 
-          // Play sound if enabled
-          if (session.alarm.sound) {
-            const audio = new Audio('/notification.mp3');
-            audio.play().catch(() => {});
-          }
+          // Play sound
+          const audio = new Audio('/notification.mp3');
+          audio.play().catch(() => {});
         }
       });
     };
@@ -197,9 +198,11 @@ function StudentApp() {
       Notification.requestPermission();
     }
 
-    const interval = setInterval(checkAlarms, 60000); // Check every minute
+    // Check immediately and then every minute
+    checkAlarms();
+    const interval = setInterval(checkAlarms, 60000);
     return () => clearInterval(interval);
-  }, [sessions, subjects]);
+  }, [sessions, subjects, settings.alarmEnabled, settings.alarmMinutesBefore]);
 
   // Reschedule missed sessions on app load
   const [rescheduledNotice, setRescheduledNotice] = useState<string | null>(null);

@@ -86,6 +86,9 @@ export interface Settings {
   pomodoroEnabled?: boolean;
   pomodoroWorkMinutes?: number; // default 25
   pomodoroBreakMinutes?: number; // default 5
+  // Alarm settings
+  alarmEnabled?: boolean;
+  alarmMinutesBefore?: number; // default 10
 }
 
 // Mentor/Parent info

@@ -1671,6 +1671,27 @@ body {
   font-size: 0.85rem;
 }
 
+.alarm-minutes-setting {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  margin-left: 1.5rem;
+}
+
+.alarm-minutes-input {
+  width: 60px;
+  padding: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.alarm-minutes-setting span {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
 /* Button rows */
 .button-row {
   display: flex;

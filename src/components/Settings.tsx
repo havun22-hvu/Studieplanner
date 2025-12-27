@@ -157,6 +157,30 @@ export function Settings({ settings, subjects, sessions, onSave, onClose }: Prop
           {isSupported && permission === 'denied' && (
             <p className="error-text">Notificaties geblokkeerd in browser</p>
           )}
+
+          <div className="form-group">
+            <label className="toggle-label">
+              <input
+                type="checkbox"
+                checked={settings.alarmEnabled ?? false}
+                onChange={e => onSave({ ...settings, alarmEnabled: e.target.checked })}
+              />
+              <span>Alarm voor geplande taken</span>
+            </label>
+            {settings.alarmEnabled && (
+              <div className="alarm-minutes-setting">
+                <input
+                  type="number"
+                  value={settings.alarmMinutesBefore ?? 10}
+                  onChange={e => onSave({ ...settings, alarmMinutesBefore: parseInt(e.target.value) || 10 })}
+                  min="1"
+                  max="60"
+                  className="alarm-minutes-input"
+                />
+                <span>minuten van tevoren</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Mentoren */}

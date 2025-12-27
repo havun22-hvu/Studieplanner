@@ -814,7 +814,7 @@ function StudentApp() {
             <div className="about-content">
               <p className="app-name"><strong>StudiePlanner</strong></p>
               <p className="app-tagline">Plan je studie slim en haal je deadlines</p>
-              <p className="app-version">Versie 2.9.6</p>
+              <p className="app-version">Versie 1.0.1</p>
               <div className="about-features">
                 <p>✓ Automatische studieplanning</p>
                 <p>✓ Pomodoro timer</p>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Subject, StudyTask } from '../types';
 import { SUBJECT_COLORS, TASK_UNITS } from '../types';
 import { generateId } from '../utils/planning';
@@ -23,8 +23,12 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
 
   const isVideoUnit = taskUnit === 'min video';
 
-  const addTask = () => {
-    if (!taskDesc) return;
+  // Check if form has valid data to save
+  const canSave = name.trim() && examDate;
+  const hasChanges = name.trim() || examDate || tasks.length > 0;
+
+  const addTask = useCallback(() => {
+    if (!taskDesc.trim()) return;
     if (!taskAmount || parseInt(taskAmount) <= 0) return;
     // Bij video is amount = tijd, anders apart tijd veld vereist
     if (!isVideoUnit && (!taskMinutes || parseInt(taskMinutes) <= 0)) return;
@@ -32,38 +36,65 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
     const newTask: StudyTask = {
       id: generateId(),
       subjectId: editSubject?.id || '',
-      description: taskDesc,
+      description: taskDesc.trim(),
       plannedAmount: parseInt(taskAmount),
       unit: taskUnit,
       estimatedMinutes: isVideoUnit ? parseInt(taskAmount) : parseInt(taskMinutes),
       completed: false,
     };
 
-    setTasks([...tasks, newTask]);
+    setTasks(prev => [...prev, newTask]);
     setTaskDesc('');
     setTaskAmount('');
     setTaskMinutes('');
-  };
+  }, [taskDesc, taskAmount, taskUnit, taskMinutes, isVideoUnit, editSubject?.id]);
 
+  // Handle Enter key in task inputs
+  const handleTaskKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTask();
+    }
+  };
 
   const removeTask = (id: string) => {
     setTasks(tasks.filter(t => t.id !== id));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !examDate) return;
-
-    const subject: Subject = {
-      id: editSubject?.id || generateId(),
-      name,
+  // Build subject object
+  const buildSubject = useCallback((): Subject => {
+    const subjectId = editSubject?.id || generateId();
+    return {
+      id: subjectId,
+      name: name.trim(),
       color,
       examDate,
-      tasks: tasks.map(t => ({ ...t, subjectId: editSubject?.id || generateId() })),
+      tasks: tasks.map(t => ({ ...t, subjectId })),
     };
+  }, [editSubject?.id, name, color, examDate, tasks]);
 
-    onSave(subject);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSave) return;
+    onSave(buildSubject());
   };
+
+  // Auto-save on close if there's valid data
+  const handleClose = () => {
+    if (canSave && hasChanges) {
+      onSave(buildSubject());
+    } else {
+      onCancel();
+    }
+  };
+
+  // Auto-save when component unmounts with valid data
+  useEffect(() => {
+    return () => {
+      // This runs on unmount - but we can't call onSave here reliably
+      // So we rely on handleClose being called
+    };
+  }, []);
 
   const totalMinutes = tasks.reduce((sum, t) => sum + t.estimatedMinutes, 0);
 
@@ -71,7 +102,7 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
     <form onSubmit={handleSubmit} className="subject-form">
       <h2>
         {editSubject ? 'Vak bewerken' : 'Nieuw vak'}
-        <button type="button" className="form-close-btn" onClick={onCancel}>&times;</button>
+        <button type="button" className="form-close-btn" onClick={handleClose}>&times;</button>
       </h2>
 
       <div className="form-body">
@@ -83,6 +114,7 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
           onChange={e => setName(e.target.value)}
           placeholder="Bijv. Wiskunde"
           required
+          autoFocus
         />
       </div>
 
@@ -113,13 +145,14 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
       </div>
 
       <div className="tasks-section">
-        <h3>Studietaken</h3>
+        <h3>Studietaken {tasks.length > 0 && `(${tasks.length})`}</h3>
 
         <div className="task-input-form">
           <input
             type="text"
             value={taskDesc}
             onChange={e => setTaskDesc(e.target.value)}
+            onKeyDown={handleTaskKeyDown}
             placeholder="Taak (bijv. H3, Par. 2.1)"
             className="form-task-input"
           />
@@ -128,6 +161,7 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
               type="number"
               value={taskAmount}
               onChange={e => setTaskAmount(e.target.value)}
+              onKeyDown={handleTaskKeyDown}
               placeholder="Aantal"
               min="1"
               className="form-amount-input"
@@ -149,6 +183,7 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
                   type="number"
                   value={taskMinutes}
                   onChange={e => setTaskMinutes(e.target.value)}
+                  onKeyDown={handleTaskKeyDown}
                   placeholder="Tijd"
                   min="1"
                   className="form-time-input"
@@ -156,7 +191,7 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
                 <span className="form-min-label">min.</span>
               </>
             )}
-            <button type="button" onClick={addTask} className="btn-add-task">Toevoegen</button>
+            <button type="button" onClick={addTask} className="btn-add-task">+ Taak</button>
           </div>
         </div>
 
@@ -177,8 +212,8 @@ export function SubjectForm({ onSave, onCancel, editSubject }: Props) {
       </div>
 
       <div className="form-actions">
-        <button type="submit" className="btn-primary btn-full" disabled={!name || !examDate || tasks.length === 0}>
-          Opslaan
+        <button type="submit" className="btn-primary btn-full" disabled={!canSave}>
+          {canSave ? 'Opslaan' : 'Vul naam en datum in'}
         </button>
       </div>
       </div>

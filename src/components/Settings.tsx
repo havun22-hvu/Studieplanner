@@ -186,16 +186,6 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onRest
             </div>
           )}
 
-          {isSupported && permission !== 'granted' && (
-            <button onClick={requestPermission} className="btn-secondary btn-full">
-              Notificaties inschakelen
-            </button>
-          )}
-
-          {isSupported && permission === 'denied' && (
-            <p className="error-text">Notificaties geblokkeerd in browser</p>
-          )}
-
           <div className="form-group">
             <label className="toggle-label">
               <input
@@ -242,6 +232,47 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onRest
             )}
           </div>
         </div>
+
+        {/* Notificaties */}
+        {isSupported && (
+          <div className="settings-section">
+            <h3>Notificaties</h3>
+            <div className="notification-status">
+              {permission === 'granted' && (
+                <div className="status-granted">
+                  <span className="status-icon">✓</span>
+                  <span>Notificaties zijn ingeschakeld</span>
+                </div>
+              )}
+
+              {permission === 'default' && (
+                <>
+                  <p className="help-text">Ontvang meldingen wanneer je studiesessie begint of eindigt.</p>
+                  <button onClick={requestPermission} className="btn-primary btn-full">
+                    🔔 Notificaties inschakelen
+                  </button>
+                </>
+              )}
+
+              {permission === 'denied' && (
+                <div className="notification-blocked">
+                  <div className="status-denied">
+                    <span className="status-icon">⚠️</span>
+                    <span>Notificaties zijn geblokkeerd</span>
+                  </div>
+                  <p className="help-text">
+                    Om notificaties in te schakelen:
+                  </p>
+                  <ol className="help-steps">
+                    <li>Tik op het 🔒 of ⋮ icoon in de adresbalk</li>
+                    <li>Ga naar "Site-instellingen" of "Machtigingen"</li>
+                    <li>Zet "Notificaties" op "Toestaan"</li>
+                  </ol>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Mentoren */}
         <div className="settings-section">

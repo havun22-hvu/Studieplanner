@@ -111,29 +111,57 @@ export function StudyTimer({ session, subject, task, settings, onComplete, onCan
     if (savedState) {
       try {
         const state: TimerState = JSON.parse(savedState);
-        if (state.sessionId === session.id) {
+
+        // Validate timer state
+        const isValidState = (
+          state.sessionId === session.id &&
+          typeof state.startTime === 'number' &&
+          state.startTime > 0 &&
+          typeof state.totalPausedMs === 'number' &&
+          state.totalPausedMs >= 0
+        );
+
+        // Check if timer is not too old (max 24 hours)
+        const MAX_TIMER_AGE_MS = 24 * 60 * 60 * 1000;
+        const timerAge = Date.now() - state.startTime;
+        const isNotTooOld = timerAge < MAX_TIMER_AGE_MS && timerAge > 0;
+
+        if (isValidState && isNotTooOld) {
           startTimeRef.current = state.startTime;
           totalPausedMsRef.current = state.totalPausedMs;
-          lastCheckMinuteRef.current = state.lastCheckMinute;
+          lastCheckMinuteRef.current = state.lastCheckMinute || 0;
           if (state.pomodoroPhase) setPomodoroPhase(state.pomodoroPhase);
           if (state.pomodoroCount) setPomodoroCount(state.pomodoroCount);
 
           if (state.pausedAt) {
             const elapsed = Math.floor((state.pausedAt - state.startTime - state.totalPausedMs) / 1000);
-            setElapsedSeconds(elapsed);
-            setIsPaused(true);
-            setIsRunning(true);
+            // Validate elapsed is reasonable
+            if (elapsed >= 0 && elapsed < MAX_TIMER_AGE_MS / 1000) {
+              setElapsedSeconds(elapsed);
+              setIsPaused(true);
+              setIsRunning(true);
+            } else {
+              clearTimerState();
+            }
           } else {
             const now = Date.now();
             const elapsed = Math.floor((now - state.startTime - state.totalPausedMs) / 1000);
-            setElapsedSeconds(elapsed);
-            setIsRunning(true);
+            // Validate elapsed is reasonable
+            if (elapsed >= 0 && elapsed < MAX_TIMER_AGE_MS / 1000) {
+              setElapsedSeconds(elapsed);
+              setIsRunning(true);
 
-            intervalRef.current = window.setInterval(() => {
-              const newElapsed = Math.floor((Date.now() - startTimeRef.current - totalPausedMsRef.current) / 1000);
-              setElapsedSeconds(newElapsed);
-            }, 1000);
+              intervalRef.current = window.setInterval(() => {
+                const newElapsed = Math.floor((Date.now() - startTimeRef.current - totalPausedMsRef.current) / 1000);
+                setElapsedSeconds(Math.max(0, newElapsed));
+              }, 1000);
+            } else {
+              clearTimerState();
+            }
           }
+        } else {
+          // Invalid or expired state, clean up
+          clearTimerState();
         }
       } catch (e) {
         console.log('Failed to restore timer state:', e);

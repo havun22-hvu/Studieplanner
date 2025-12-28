@@ -253,6 +253,12 @@ npm run build
 - [x] SubjectForm in fullscreen modal met sticky header en sluitknop
 - [x] Body scroll lock wanneer modal open is
 - [x] Nginx config: no-cache headers voor sw-v2.js en index.html
+- [x] Timer crash fix: validatie corrupt/verlopen localStorage state (max 24u)
+- [x] Dag detail modal z-index fix (1000) voor correcte weergave op PC
+- [x] Notificaties sectie in instellingen met status en instructies
+- [x] Productie API URL configuratie (.env.production)
+- [x] SubjectForm auto-save bij sluiten, Enter key voor taken, taken optioneel
+- [x] Sticky tabs met subtiele shadow
 
 **Uitgeschakeld (wacht op werkende API):**
 - [ ] SOMtoday integratie (code aanwezig in SchoolSystemSettings.tsx)

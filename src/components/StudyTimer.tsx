@@ -65,6 +65,7 @@ export function StudyTimer({ session, subject, task, settings, onComplete, onCan
   const [isPaused, setIsPaused] = useState(false);
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [timeUpNotified, setTimeUpNotified] = useState(false);
+  const [showTimeUpChoice, setShowTimeUpChoice] = useState(false);
 
   // Pomodoro state
   const [pomodoroPhase, setPomodoroPhase] = useState<'work' | 'break'>('work');
@@ -261,20 +262,30 @@ export function StudyTimer({ session, subject, task, settings, onComplete, onCan
       setShowCheckIn(true);
     }
 
-    // Notify when total time is up
-    if (elapsedSeconds >= plannedSeconds && !timeUpNotified) {
+    // Notify when total time is up - show choice popup
+    if (elapsedSeconds >= plannedSeconds && !timeUpNotified && !showTimeUpChoice) {
       setTimeUpNotified(true);
       if (!pomodoroEnabled) {
+        // Pause timer and show choice
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+        setIsPaused(true);
+        saveTimerState(Date.now());
+
         playSound('complete');
+        setShowTimeUpChoice(true);
+
         if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('Tijd is om!', {
-            body: `${subject?.name}: ${task?.description} - Je geplande tijd is voorbij`,
+          new Notification('Tijd is om! ⏰', {
+            body: `${subject?.name}: ${task?.description} - Klaar of doorgaan?`,
             icon: '/icon-192.png',
           });
         }
       }
     }
-  }, [elapsedSeconds, isRunning, isPaused, plannedSeconds, timeUpNotified, subject, task, saveTimerState, pomodoroEnabled]);
+  }, [elapsedSeconds, isRunning, isPaused, plannedSeconds, timeUpNotified, showTimeUpChoice, subject, task, saveTimerState, pomodoroEnabled]);
 
   const handleStart = async () => {
     setIsRunning(true);
@@ -358,6 +369,39 @@ export function StudyTimer({ session, subject, task, settings, onComplete, onCan
 
   const handleCheckInConfirm = () => {
     setShowCheckIn(false);
+  };
+
+  // Handle time-up choices
+  const handleTimeUpContinue = () => {
+    setShowTimeUpChoice(false);
+    setIsPaused(false);
+
+    // Resume timer
+    intervalRef.current = window.setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTimeRef.current - totalPausedMsRef.current) / 1000);
+      setElapsedSeconds(elapsed);
+    }, 1000);
+  };
+
+  const handleTimeUpStop = () => {
+    setShowTimeUpChoice(false);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    setIsRunning(false);
+    clearTimerState();
+
+    const minutesSpent = Math.ceil(elapsedSeconds / 60);
+
+    // Sync to backend
+    api.stopSession({
+      session_id: session.id,
+      minutes_actual: minutesSpent,
+      status: 'completed',
+    }).catch(e => console.log('Failed to sync session stop:', e));
+
+    onComplete(minutesSpent);
   };
 
   const handleCancel = async () => {
@@ -515,6 +559,25 @@ export function StudyTimer({ session, subject, task, settings, onComplete, onCan
             <button className="btn-primary" onClick={handleCheckInConfirm}>
               Ja, ik studeer nog!
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Time-up choice modal */}
+      {showTimeUpChoice && (
+        <div className="checkin-overlay">
+          <div className="checkin-modal timeup-modal">
+            <h3>⏰ Tijd is om!</h3>
+            <p>Je geplande {session.minutesPlanned} minuten zijn voorbij.</p>
+            <p className="timeup-question">Wil je je resultaat invullen of doorgaan?</p>
+            <div className="timeup-buttons">
+              <button className="btn-primary" onClick={handleTimeUpStop}>
+                ✅ Resultaat invullen
+              </button>
+              <button className="btn-secondary" onClick={handleTimeUpContinue}>
+                ▶ Doorgaan
+              </button>
+            </div>
           </div>
         </div>
       )}

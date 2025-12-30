@@ -10,6 +10,8 @@ interface Props {
   onCancel: () => void;
 }
 
+export type IncompleteAction = 'reschedule' | 'extend';
+
 export interface SessionResultData {
   sessionId: string;
   minutesSpent: number;
@@ -17,12 +19,16 @@ export interface SessionResultData {
   needsMoreTime: boolean;
   remainingAmount: number; // hoeveel nog te doen
   knowledgeRating?: number; // 1-10 geschatte kennisopname
+  incompleteAction?: IncompleteAction; // what to do with remaining
+  extraMinutes?: number; // if extending, how many extra minutes
 }
 
 export function SessionResultModal({ session, subject, task, initialMinutes, onSave, onCancel }: Props) {
   const [minutesSpent, setMinutesSpent] = useState(initialMinutes || session.minutesPlanned);
   const [amountCompleted, setAmountCompleted] = useState(session.amountPlanned);
   const [knowledgeRating, setKnowledgeRating] = useState<number>(7);
+  const [incompleteAction, setIncompleteAction] = useState<IncompleteAction>('reschedule');
+  const [extraMinutes, setExtraMinutes] = useState(30);
 
   const remainingAmount = Math.max(0, session.amountPlanned - amountCompleted);
   const completedAll = amountCompleted >= session.amountPlanned;
@@ -43,6 +49,8 @@ export function SessionResultModal({ session, subject, task, initialMinutes, onS
       needsMoreTime: !completedAll,
       remainingAmount,
       knowledgeRating,
+      incompleteAction: !completedAll ? incompleteAction : undefined,
+      extraMinutes: !completedAll && incompleteAction === 'extend' ? extraMinutes : undefined,
     });
   };
 
@@ -99,15 +107,51 @@ export function SessionResultModal({ session, subject, task, initialMinutes, onS
           </div>
 
           {!completedAll && (
-            <div className="warning-box">
-              <span className="warning-icon">📋</span>
-              <div className="warning-content">
-                <strong>Nog niet alles af</strong>
-                <p>
-                  Je kunt dit blok later opnieuw starten voor de resterende
-                  <strong> {remainingAmount} {session.unit}</strong>.
-                </p>
+            <div className="incomplete-options">
+              <p className="incomplete-label">
+                Nog <strong>{remainingAmount} {session.unit}</strong> te doen. Wat wil je doen?
+              </p>
+              <div className="option-buttons">
+                <button
+                  type="button"
+                  className={`option-btn ${incompleteAction === 'reschedule' ? 'active' : ''}`}
+                  onClick={() => setIncompleteAction('reschedule')}
+                >
+                  <span className="option-icon">📋</span>
+                  <span className="option-text">
+                    <strong>Nieuw blok</strong>
+                    <small>Plan restant later in</small>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className={`option-btn ${incompleteAction === 'extend' ? 'active' : ''}`}
+                  onClick={() => setIncompleteAction('extend')}
+                >
+                  <span className="option-icon">⏰</span>
+                  <span className="option-text">
+                    <strong>Verlengen</strong>
+                    <small>Nu meer tijd toevoegen</small>
+                  </span>
+                </button>
               </div>
+              {incompleteAction === 'extend' && (
+                <div className="extend-options">
+                  <label>Hoeveel minuten extra?</label>
+                  <div className="extend-buttons">
+                    {[15, 30, 45, 60].map(mins => (
+                      <button
+                        key={mins}
+                        type="button"
+                        className={`extend-btn ${extraMinutes === mins ? 'active' : ''}`}
+                        onClick={() => setExtraMinutes(mins)}
+                      >
+                        +{mins}m
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

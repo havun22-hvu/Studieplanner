@@ -2654,6 +2654,105 @@ body.is-dragging * {
   margin: 0;
 }
 
+/* Incomplete task options */
+.incomplete-options {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid var(--warning);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.incomplete-label {
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+
+.option-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.option-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.option-btn:hover {
+  border-color: var(--primary);
+}
+
+.option-btn.active {
+  border-color: var(--primary);
+  background: rgba(79, 70, 229, 0.1);
+}
+
+.option-icon {
+  font-size: 1.25rem;
+}
+
+.option-text {
+  text-align: left;
+}
+
+.option-text strong {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.option-text small {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.extend-options {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.extend-options label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-muted);
+}
+
+.extend-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.extend-btn {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.extend-btn:hover {
+  border-color: var(--primary);
+}
+
+.extend-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
 /* Result Comparison */
 .result-comparison {
   padding: 1rem;
@@ -3025,6 +3124,28 @@ body.is-dragging * {
   width: 100%;
   padding: 1rem;
   font-size: 1rem;
+}
+
+/* Time-up choice modal */
+.timeup-modal h3 {
+  font-size: 1.5rem;
+}
+
+.timeup-question {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.timeup-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.timeup-buttons button {
+  padding: 1rem;
+  font-size: 1rem;
+  width: 100%;
 }
 
 @keyframes fadeIn {

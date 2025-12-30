@@ -600,8 +600,7 @@ function StudentApp() {
     // Only mark as completed if the full amount was done
     const isFullyCompleted = result.amountCompleted >= session.amountPlanned;
 
-    // Update session with actual minutes, amount, and knowledge rating
-    setSessions(sessions.map(s => {
+    let updatedSessions = sessions.map(s => {
       if (s.id !== result.sessionId) return s;
       return {
         ...s,
@@ -610,15 +609,65 @@ function StudentApp() {
         amountActual: result.amountCompleted,
         knowledgeRating: result.knowledgeRating,
       };
-    }));
+    });
+
+    // Handle incomplete task actions
+    if (!isFullyCompleted && result.incompleteAction) {
+      if (result.incompleteAction === 'reschedule') {
+        // Create new session for remaining amount (on the shelf, no hour set)
+        const newSession: PlannedSession = {
+          id: generateId(),
+          date: session.date, // same date, user can move it
+          taskId: session.taskId,
+          subjectId: session.subjectId,
+          minutesPlanned: Math.ceil((result.remainingAmount / session.amountPlanned) * session.minutesPlanned),
+          amountPlanned: result.remainingAmount,
+          unit: session.unit,
+          completed: false,
+          // no hour - goes to shelf
+        };
+        updatedSessions = [...updatedSessions, newSession];
+      } else if (result.incompleteAction === 'extend' && result.extraMinutes) {
+        // Extend current session and shift other blocks
+        const sessionHour = session.hour;
+        const extraHours = Math.ceil(result.extraMinutes / 60);
+
+        updatedSessions = updatedSessions.map(s => {
+          if (s.id === result.sessionId) {
+            // Extend this session
+            return {
+              ...s,
+              minutesPlanned: s.minutesPlanned + result.extraMinutes!,
+              completed: false, // reset to allow continuing
+              minutesActual: undefined, // reset actual
+              amountActual: undefined,
+            };
+          }
+          // Shift other sessions on the same day that come after
+          if (s.date === session.date && s.hour !== undefined && sessionHour !== undefined && s.hour > sessionHour) {
+            return { ...s, hour: s.hour + extraHours };
+          }
+          return s;
+        });
+
+        // Reopen timer for extended session
+        const extendedSession = updatedSessions.find(s => s.id === result.sessionId);
+        if (extendedSession) {
+          setSessions(updatedSessions);
+          setSelectedSession(null);
+          setTimerMinutes(0);
+          // Small delay to allow state update before opening timer
+          setTimeout(() => setTimerSession(extendedSession), 100);
+          notifyMentors('complete', session, result);
+          return;
+        }
+      }
+    }
+
+    setSessions(updatedSessions);
 
     // Notify mentors on complete
     notifyMentors('complete', session, result);
-
-    // If task wasn't fully completed, show message (session stays open for retry)
-    if (!isFullyCompleted) {
-      alert(`Nog ${result.remainingAmount} ${session.unit} te doen.\n\nJe kunt dit blok later opnieuw starten.`);
-    }
 
     setSelectedSession(null);
     setTimerMinutes(0);

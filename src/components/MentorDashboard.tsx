@@ -32,6 +32,8 @@ export function MentorDashboard() {
   const [codeSuccess, setCodeSuccess] = useState('');
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'vakken' | 'agenda' | 'stats'>('vakken');
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [showSettings, setShowSettings] = useState(() => {
     const shouldShow = localStorage.getItem('showAboutAfterUpdate') === 'true';
     if (shouldShow) {
@@ -108,6 +110,17 @@ export function MentorDashboard() {
     }
   }, [selectedStudent]);
 
+  // Auto-refresh student data every 30 seconds
+  useEffect(() => {
+    if (!selectedStudent) return;
+
+    const interval = setInterval(() => {
+      loadStudentData(selectedStudent.id);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [selectedStudent]);
+
   const loadStudents = async () => {
     try {
       const data = await api.getMentorStudents();
@@ -122,7 +135,8 @@ export function MentorDashboard() {
     }
   };
 
-  const loadStudentData = async (studentId: number) => {
+  const loadStudentData = async (studentId: number, showRefreshing = false) => {
+    if (showRefreshing) setIsRefreshing(true);
     try {
       const data = await api.getStudentData(studentId);
       // Convert API response to match frontend types
@@ -148,8 +162,17 @@ export function MentorDashboard() {
           hour: s.hour ?? undefined,
         })),
       });
+      setLastRefresh(new Date());
     } catch (err) {
       console.error('Failed to load student data:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleManualRefresh = () => {
+    if (selectedStudent && !isRefreshing) {
+      loadStudentData(selectedStudent.id, true);
     }
   };
 
@@ -295,7 +318,24 @@ export function MentorDashboard() {
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
               >
-                <h2>{studentData.student.name}</h2>
+                <div className="student-header-top">
+                  <h2>{studentData.student.name}</h2>
+                  <div className="refresh-section">
+                    {lastRefresh && (
+                      <span className="last-refresh">
+                        {lastRefresh.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
+                    <button
+                      onClick={handleManualRefresh}
+                      className={`btn-refresh ${isRefreshing ? 'refreshing' : ''}`}
+                      disabled={isRefreshing}
+                      title="Vernieuwen"
+                    >
+                      🔄
+                    </button>
+                  </div>
+                </div>
                 <nav className="student-nav">
                   <button
                     className={view === 'vakken' ? 'active' : ''}

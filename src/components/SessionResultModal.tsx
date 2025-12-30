@@ -138,17 +138,16 @@ export function SessionResultModal({ session, subject, task, initialMinutes, onS
               {incompleteAction === 'extend' && (
                 <div className="extend-options">
                   <label>Hoeveel minuten extra?</label>
-                  <div className="extend-buttons">
-                    {[15, 30, 45, 60].map(mins => (
-                      <button
-                        key={mins}
-                        type="button"
-                        className={`extend-btn ${extraMinutes === mins ? 'active' : ''}`}
-                        onClick={() => setExtraMinutes(mins)}
-                      >
-                        +{mins}m
-                      </button>
-                    ))}
+                  <div className="extend-input-wrapper">
+                    <input
+                      type="number"
+                      value={extraMinutes}
+                      onChange={e => setExtraMinutes(Math.max(1, parseInt(e.target.value) || 0))}
+                      min="1"
+                      max="180"
+                      className="extend-input"
+                    />
+                    <span className="extend-unit">min</span>
                   </div>
                 </div>
               )}

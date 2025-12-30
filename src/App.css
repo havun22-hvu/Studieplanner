@@ -2727,30 +2727,31 @@ body.is-dragging * {
   color: var(--text-muted);
 }
 
-.extend-buttons {
+.extend-input-wrapper {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
 }
 
-.extend-btn {
-  flex: 1;
+.extend-input {
+  width: 80px;
   padding: 0.5rem;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--card);
+  font-size: 1rem;
   font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  text-align: center;
 }
 
-.extend-btn:hover {
+.extend-input:focus {
+  outline: none;
   border-color: var(--primary);
 }
 
-.extend-btn.active {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
+.extend-unit {
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
 /* Result Comparison */

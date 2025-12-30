@@ -121,6 +121,20 @@ class ApiService {
     });
   }
 
+  // Check if student has active session (lightweight polling endpoint)
+  async getStudentActiveSession(studentId: number) {
+    return this.request<{
+      hasActiveSession: boolean;
+      session: {
+        id: string;
+        subjectName: string;
+        taskDescription: string;
+        startedAt: string;
+        minutesPlanned: number;
+      } | null;
+    }>(`/mentor/student/${studentId}/active-session`);
+  }
+
   // Student mentor endpoints
   async generateStudentInvite() {
     return this.request<{ invite_code: string; message: string }>('/student/invite', {

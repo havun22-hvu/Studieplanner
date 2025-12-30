@@ -34,6 +34,13 @@ export function MentorDashboard() {
   const [view, setView] = useState<'vakken' | 'agenda' | 'stats'>('vakken');
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [activeSession, setActiveSession] = useState<{
+    id: string;
+    subjectName: string;
+    taskDescription: string;
+    startedAt: string;
+    minutesPlanned: number;
+  } | null>(null);
   const [showSettings, setShowSettings] = useState(() => {
     const shouldShow = localStorage.getItem('showAboutAfterUpdate') === 'true';
     if (shouldShow) {
@@ -110,15 +117,60 @@ export function MentorDashboard() {
     }
   }, [selectedStudent]);
 
-  // Auto-refresh student data every 30 seconds
+  // Smart polling: check for active session, then poll fast if active
   useEffect(() => {
     if (!selectedStudent) return;
 
-    const interval = setInterval(() => {
-      loadStudentData(selectedStudent.id);
-    }, 30000);
+    let lazyInterval: number | null = null;
+    let fastInterval: number | null = null;
+    let currentlyActive = false;
 
-    return () => clearInterval(interval);
+    const checkActiveSession = async () => {
+      try {
+        const result = await api.getStudentActiveSession(selectedStudent.id);
+        const wasActive = currentlyActive;
+        currentlyActive = result.hasActiveSession;
+        setActiveSession(result.session);
+
+        // Session just started → start fast polling
+        if (currentlyActive && !wasActive) {
+          startFastPolling();
+        }
+        // Session just ended → stop fast polling, refresh data once
+        else if (!currentlyActive && wasActive) {
+          stopFastPolling();
+          loadStudentData(selectedStudent.id, true);
+        }
+      } catch (err) {
+        console.error('Failed to check active session:', err);
+      }
+    };
+
+    const startFastPolling = () => {
+      if (fastInterval) return;
+      // Poll data every 5 seconds during active session
+      fastInterval = window.setInterval(() => {
+        loadStudentData(selectedStudent.id);
+      }, 5000);
+    };
+
+    const stopFastPolling = () => {
+      if (fastInterval) {
+        clearInterval(fastInterval);
+        fastInterval = null;
+      }
+    };
+
+    // Initial check
+    checkActiveSession();
+
+    // Lazy poll every 60 seconds to detect session start
+    lazyInterval = window.setInterval(checkActiveSession, 60000);
+
+    return () => {
+      if (lazyInterval) clearInterval(lazyInterval);
+      if (fastInterval) clearInterval(fastInterval);
+    };
   }, [selectedStudent]);
 
   const loadStudents = async () => {
@@ -321,6 +373,12 @@ export function MentorDashboard() {
                 <div className="student-header-top">
                   <h2>{studentData.student.name}</h2>
                   <div className="refresh-section">
+                    {activeSession && (
+                      <span className="live-indicator" title={`${activeSession.subjectName}: ${activeSession.taskDescription}`}>
+                        <span className="live-dot"></span>
+                        Bezig met studeren
+                      </span>
+                    )}
                     {lastRefresh && (
                       <span className="last-refresh">
                         {lastRefresh.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
@@ -336,6 +394,17 @@ export function MentorDashboard() {
                     </button>
                   </div>
                 </div>
+
+                {/* Live session banner */}
+                {activeSession && (
+                  <div className="live-session-banner">
+                    <span className="live-session-subject">{activeSession.subjectName}</span>
+                    <span className="live-session-task">{activeSession.taskDescription}</span>
+                    <span className="live-session-time">
+                      Gestart: {new Date(activeSession.startedAt).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                )}
                 <nav className="student-nav">
                   <button
                     className={view === 'vakken' ? 'active' : ''}

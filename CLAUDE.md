@@ -265,9 +265,14 @@ npm run build
 - [ ] Magister integratie (code aanwezig in services/magister.ts)
 - [ ] Privacy notice voor schoolsysteem koppeling (AVG-compliant, klaar voor gebruik)
 
+**Voltooid (december 2024 - WebSocket):**
+- [x] Mentor live sessies via WebSocket (HavunCore + Laravel Reverb)
+- [x] Real-time push updates bij sessie start/stop
+- [x] useLiveSession hook voor WebSocket verbinding
+- [x] Fallback check voor bestaande actieve sessies
+
 **TODO:**
 - [ ] Dagelijkse evaluatie (eindtijd instellen)
-- [ ] Mentor live sessies zien (real-time updates)
 - [ ] Email verificatie (optioneel, voor meerdere gebruikers)
 - [ ] SOMtoday/Magister activeren wanneer API beschikbaar is
 
@@ -354,7 +359,66 @@ php artisan serve --port=8000
 # Terminal 2: Frontend
 cd D:\GitHub\Studieplanner
 npm run dev
+
+# Terminal 3: HavunCore WebSocket (voor live mentor updates)
+cd D:\GitHub\HavunCore
+php artisan reverb:start
 ```
+
+---
+
+## Real-time Mentor Updates (WebSocket)
+
+### Architectuur
+```
+┌─────────────────┐     HTTP POST      ┌─────────────────┐
+│ Studieplanner   │ ──────────────────▶│   HavunCore     │
+│     API         │  /session/broadcast│ (Laravel Reverb)│
+└─────────────────┘                    └────────┬────────┘
+       ▲                                        │
+       │ HTTP                                   │ WebSocket
+       │                                        ▼
+┌─────────────────┐                    ┌─────────────────┐
+│   Leerling      │                    │    Mentor       │
+│   Frontend      │                    │   Dashboard     │
+└─────────────────┘                    └─────────────────┘
+```
+
+### Flow
+1. Leerling start/stopt studiesessie
+2. Studieplanner-api → POST naar HavunCore `/api/studieplanner/session/broadcast`
+3. HavunCore broadcast event via Laravel Reverb WebSocket
+4. Mentor dashboard ontvangt real-time update via `useLiveSession` hook
+
+### Configuratie
+**HavunCore (.env):**
+```env
+BROADCAST_CONNECTION=reverb
+REVERB_APP_ID=studieplanner
+REVERB_APP_KEY=your-key
+REVERB_APP_SECRET=your-secret
+REVERB_SERVER_HOST=0.0.0.0
+REVERB_SERVER_PORT=8080
+STUDIEPLANNER_API_KEY=shared-secret-key
+```
+
+**Studieplanner-api (.env):**
+```env
+HAVUNCORE_URL=https://havuncore.havun.nl
+HAVUNCORE_API_KEY=shared-secret-key
+```
+
+**Studieplanner frontend (.env.production):**
+```env
+VITE_HAVUNCORE_URL=https://havuncore.havun.nl:8080
+VITE_REVERB_APP_KEY=studieplanner
+```
+
+### Bestanden
+- `HavunCore/app/Events/StudySessionUpdated.php` - Broadcast event
+- `HavunCore/app/Http/Controllers/Api/StudySessionController.php` - Ontvang + broadcast
+- `Studieplanner-api/app/Services/HavunCoreService.php` - Push naar HavunCore
+- `Studieplanner/src/hooks/useLiveSession.ts` - WebSocket client hook
 
 ---
 

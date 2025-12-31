@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { usePWA } from '../contexts/PWAContext';
+import { useLiveSession } from '../hooks/useLiveSession';
 import type { Subject, PlannedSession } from '../types';
 import { AgendaView } from './AgendaView';
 import { StatsView } from './StatsView';
@@ -34,13 +35,6 @@ export function MentorDashboard() {
   const [view, setView] = useState<'vakken' | 'agenda' | 'stats'>('vakken');
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [activeSession, setActiveSession] = useState<{
-    id: string;
-    subjectName: string;
-    taskDescription: string;
-    startedAt: string;
-    minutesPlanned: number;
-  } | null>(null);
   const [showSettings, setShowSettings] = useState(() => {
     const shouldShow = localStorage.getItem('showAboutAfterUpdate') === 'true';
     if (shouldShow) {
@@ -117,61 +111,52 @@ export function MentorDashboard() {
     }
   }, [selectedStudent]);
 
-  // Smart polling: check for active session, then poll fast if active
+  // Get all student IDs for WebSocket subscriptions
+  const studentIds = useMemo(() => students.map(s => s.id), [students]);
+
+  // Load student data callback for WebSocket events
+  const handleSessionEvent = useCallback(() => {
+    if (selectedStudent) {
+      loadStudentData(selectedStudent.id, true);
+    }
+  }, [selectedStudent]);
+
+  // Real-time WebSocket connection for live session updates
+  const { connected: wsConnected, activeSession, error: wsError } = useLiveSession({
+    studentIds,
+    onSessionStart: handleSessionEvent,
+    onSessionStop: handleSessionEvent,
+    enabled: students.length > 0,
+  });
+
+  // Fallback: check for active session on initial load (WebSocket might miss if session already started)
   useEffect(() => {
     if (!selectedStudent) return;
 
-    let lazyInterval: number | null = null;
-    let fastInterval: number | null = null;
-    let currentlyActive = false;
-
-    const checkActiveSession = async () => {
+    const checkInitialSession = async () => {
       try {
         const result = await api.getStudentActiveSession(selectedStudent.id);
-        const wasActive = currentlyActive;
-        currentlyActive = result.hasActiveSession;
-        setActiveSession(result.session);
-
-        // Session just started → start fast polling
-        if (currentlyActive && !wasActive) {
-          startFastPolling();
-        }
-        // Session just ended → stop fast polling, refresh data once
-        else if (!currentlyActive && wasActive) {
-          stopFastPolling();
-          loadStudentData(selectedStudent.id, true);
+        // Only set if WebSocket hasn't already picked it up
+        if (result.hasActiveSession && !activeSession) {
+          // Trigger a data refresh
+          loadStudentData(selectedStudent.id);
         }
       } catch (err) {
-        console.error('Failed to check active session:', err);
+        console.error('Failed to check initial session:', err);
       }
     };
 
-    const startFastPolling = () => {
-      if (fastInterval) return;
-      // Poll data every 5 seconds during active session
-      fastInterval = window.setInterval(() => {
-        loadStudentData(selectedStudent.id);
-      }, 5000);
-    };
+    checkInitialSession();
+  }, [selectedStudent, activeSession]);
 
-    const stopFastPolling = () => {
-      if (fastInterval) {
-        clearInterval(fastInterval);
-        fastInterval = null;
-      }
-    };
-
-    // Initial check
-    checkActiveSession();
-
-    // Lazy poll every 60 seconds to detect session start
-    lazyInterval = window.setInterval(checkActiveSession, 60000);
-
-    return () => {
-      if (lazyInterval) clearInterval(lazyInterval);
-      if (fastInterval) clearInterval(fastInterval);
-    };
-  }, [selectedStudent]);
+  // Log WebSocket status for debugging
+  useEffect(() => {
+    if (wsConnected) {
+      console.log('[Mentor] WebSocket connected, listening for live updates');
+    } else if (wsError) {
+      console.warn('[Mentor] WebSocket error:', wsError);
+    }
+  }, [wsConnected, wsError]);
 
   const loadStudents = async () => {
     try {

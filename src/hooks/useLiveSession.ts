@@ -3,8 +3,7 @@ import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 
 // Make Pusher globally available for Laravel Echo
-// @ts-expect-error Pusher needs to be globally available
-window.Pusher = Pusher;
+(window as Window & { Pusher?: typeof Pusher }).Pusher = Pusher;
 
 interface SessionEvent {
   type: 'started' | 'stopped' | 'completed';
@@ -43,7 +42,8 @@ export function useLiveSession({
   onSessionStop,
   enabled = true,
 }: UseLiveSessionOptions) {
-  const echoRef = useRef<Echo | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const echoRef = useRef<Echo<any> | null>(null);
   const [connected, setConnected] = useState(false);
   const [activeSession, setActiveSession] = useState<LiveSessionData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,13 +55,14 @@ export function useLiveSession({
     try {
       // Parse host and port from URL
       const url = new URL(HAVUNCORE_URL);
+      const port = url.port ? parseInt(url.port, 10) : (url.protocol === 'https:' ? 443 : 80);
 
       echoRef.current = new Echo({
         broadcaster: 'reverb',
         key: REVERB_APP_KEY,
         wsHost: url.hostname,
-        wsPort: url.port || (url.protocol === 'https:' ? 443 : 80),
-        wssPort: url.port || (url.protocol === 'https:' ? 443 : 80),
+        wsPort: port,
+        wssPort: port,
         forceTLS: url.protocol === 'https:',
         enabledTransports: ['ws', 'wss'],
         disableStats: true,

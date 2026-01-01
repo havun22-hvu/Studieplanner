@@ -134,6 +134,10 @@ export function StudyTimer({ session, subject, task, settings, onComplete, onCan
           if (state.pomodoroPhase) setPomodoroPhase(state.pomodoroPhase);
           if (state.pomodoroCount) setPomodoroCount(state.pomodoroCount);
 
+          // Initialize phaseStartRef for pomodoro - assume current phase just started
+          // This prevents huge negative countdown values after restore
+          phaseStartRef.current = Date.now();
+
           if (state.pausedAt) {
             const elapsed = Math.floor((state.pausedAt - state.startTime - state.totalPausedMs) / 1000);
             // Validate elapsed is reasonable
@@ -180,13 +184,19 @@ export function StudyTimer({ session, subject, task, settings, onComplete, onCan
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && isRunning && !isPaused) {
         const elapsed = Math.floor((Date.now() - startTimeRef.current - totalPausedMsRef.current) / 1000);
-        setElapsedSeconds(elapsed);
+        setElapsedSeconds(Math.max(0, elapsed));
+
+        // Also update phase seconds for pomodoro
+        if (pomodoroEnabled && phaseStartRef.current > 0) {
+          const phaseElapsed = Math.floor((Date.now() - phaseStartRef.current) / 1000);
+          setPhaseSeconds(Math.max(0, phaseElapsed));
+        }
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [isRunning, isPaused]);
+  }, [isRunning, isPaused, pomodoroEnabled]);
 
   // Track phase seconds for pomodoro
   useEffect(() => {
@@ -422,9 +432,11 @@ export function StudyTimer({ session, subject, task, settings, onComplete, onCan
   };
 
   const formatTime = (seconds: number) => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
+    // Prevent negative values from crashing the display
+    const safeSeconds = Math.max(0, Math.floor(seconds));
+    const hrs = Math.floor(safeSeconds / 3600);
+    const mins = Math.floor((safeSeconds % 3600) / 60);
+    const secs = safeSeconds % 60;
 
     if (hrs > 0) {
       return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
@@ -493,7 +505,7 @@ export function StudyTimer({ session, subject, task, settings, onComplete, onCan
           <div className="timer-time">
             {pomodoroEnabled && isRunning ? (
               <>
-                <span className="timer-elapsed">{formatTime(phaseTargetSeconds - phaseSeconds)}</span>
+                <span className="timer-elapsed">{formatTime(Math.max(0, phaseTargetSeconds - phaseSeconds))}</span>
                 <span className="timer-total">Totaal: {formatTime(elapsedSeconds)}</span>
               </>
             ) : (

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Settings as SettingsType, Subject, PlannedSession } from '../types';
 import { usePWA } from '../contexts/PWAContext';
 import { useNotifications } from '../hooks/useNotifications';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 
@@ -17,6 +18,7 @@ interface Props {
 export function Settings({ settings, subjects, sessions, onSave, onClose, onRestore }: Props) {
   const { canInstall, isInstalled, install } = usePWA();
   const { permission, requestPermission, isSupported } = useNotifications(settings);
+  const { status: pushStatus, subscribe: subscribePush, isLoading: pushLoading, error: pushError } = usePushNotifications();
   const { logout } = useAuth();
 
   const [inviteCode, setInviteCode] = useState<string | null>(null);
@@ -238,18 +240,46 @@ export function Settings({ settings, subjects, sessions, onSave, onClose, onRest
           <div className="settings-section">
             <h3>Notificaties</h3>
             <div className="notification-status">
-              {permission === 'granted' && (
+              {permission === 'granted' && pushStatus === 'subscribed' && (
                 <div className="status-granted">
                   <span className="status-icon">✓</span>
-                  <span>Notificaties zijn ingeschakeld</span>
+                  <span>Push notificaties actief - je krijgt een alarm als je tijd om is</span>
                 </div>
+              )}
+
+              {permission === 'granted' && pushStatus !== 'subscribed' && (
+                <>
+                  <div className="status-granted">
+                    <span className="status-icon">✓</span>
+                    <span>Notificaties toegestaan</span>
+                  </div>
+                  <p className="help-text">Schakel push notificaties in voor een alarm wanneer je studietijd om is, ook als je telefoon op stand-by staat.</p>
+                  <button
+                    onClick={subscribePush}
+                    className="btn-primary btn-full"
+                    disabled={pushLoading}
+                  >
+                    {pushLoading ? 'Bezig...' : '🔔 Push alarm inschakelen'}
+                  </button>
+                  {pushError && <p className="error-text">{pushError}</p>}
+                </>
               )}
 
               {permission === 'default' && (
                 <>
-                  <p className="help-text">Ontvang meldingen wanneer je studiesessie begint of eindigt.</p>
-                  <button onClick={requestPermission} className="btn-primary btn-full">
-                    🔔 Notificaties inschakelen
+                  <p className="help-text">Ontvang een alarm wanneer je studietijd om is, ook als je telefoon op stand-by staat.</p>
+                  <button
+                    onClick={async () => {
+                      await requestPermission();
+                      // After granting permission, also subscribe to push
+                      if (Notification.permission === 'granted') {
+                        await subscribePush();
+                      }
+                    }}
+                    className="btn-primary btn-full"
+                    disabled={pushLoading}
+                  >
+                    {pushLoading ? 'Bezig...' : '🔔 Alarm inschakelen'}
                   </button>
                 </>
               )}

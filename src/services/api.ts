@@ -287,6 +287,25 @@ class ApiService {
       body: JSON.stringify(settings),
     });
   }
+
+  // Push notifications
+  async getVapidPublicKey() {
+    return this.request<{ publicKey: string }>('/push/vapid-public-key');
+  }
+
+  async subscribePush(subscription: PushSubscriptionJSON) {
+    return this.request<{ success: boolean; message: string }>('/push/subscribe', {
+      method: 'POST',
+      body: JSON.stringify(subscription),
+    });
+  }
+
+  async unsubscribePush(endpoint: string) {
+    return this.request<{ success: boolean; message: string }>('/push/unsubscribe', {
+      method: 'POST',
+      body: JSON.stringify({ endpoint }),
+    });
+  }
 }
 
 export const api = new ApiService();

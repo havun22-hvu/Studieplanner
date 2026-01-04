@@ -2,6 +2,16 @@
 
 > Alle technische details en specificaties
 
+## Lokale Development
+
+```bash
+# Frontend (React/Vite)
+npm run dev              # http://localhost:5173
+
+# Backend (aparte repo: Studieplanner-api)
+php artisan serve --port=8003   # http://localhost:8003
+```
+
 ## App Beschrijving
 
 ### Doel

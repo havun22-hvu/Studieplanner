@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { format } from 'date-fns';
-import { Header, Button, Input, Card, ColorPicker, Modal } from '@/components/common';
+import { Header, Button, Input, Card, ColorPicker, Modal, DatePicker } from '@/components/common';
 import { TaskItem } from '@/components/TaskItem';
 import { useSubjects } from '@/store';
 import { colors, typography, spacing, subjectColors } from '@/constants/theme';
@@ -55,13 +55,17 @@ export function SubjectDetailScreen() {
       return;
     }
 
-    if (isNew) {
-      await addSubject({ name: name.trim(), color, examDate });
-    } else {
-      await updateSubject(subjectId, { name: name.trim(), color, examDate });
+    try {
+      if (isNew) {
+        await addSubject({ name: name.trim(), color, examDate });
+      } else {
+        await updateSubject(subjectId, { name: name.trim(), color, examDate });
+      }
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error saving subject:', error);
+      Alert.alert('Fout', 'Kon vak niet opslaan');
     }
-
-    navigation.goBack();
   };
 
   const handleDelete = () => {
@@ -171,11 +175,10 @@ export function SubjectDetailScreen() {
               <ColorPicker value={color} onChange={setColor} />
             </View>
 
-            <Input
+            <DatePicker
               label="Toetsdatum"
               value={examDate}
-              onChangeText={setExamDate}
-              placeholder="YYYY-MM-DD"
+              onChange={setExamDate}
             />
 
             <Button

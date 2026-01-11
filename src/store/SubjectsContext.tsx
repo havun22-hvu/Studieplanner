@@ -58,8 +58,10 @@ export function SubjectsProvider({ children }: { children: React.ReactNode }) {
   }, [isAuthenticated]);
 
   const saveSubjects = useCallback(async (newSubjects: Subject[]) => {
+    console.log('[SubjectsContext] Saving', newSubjects.length, 'subjects');
     setSubjects(newSubjects);
     await storage.setSubjects(newSubjects);
+    console.log('[SubjectsContext] Save completed');
   }, []);
 
   const addSubject = useCallback(async (data: Omit<Subject, 'id' | 'tasks'>): Promise<Subject> => {

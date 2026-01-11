@@ -47,10 +47,10 @@ export function AuthScreen() {
     } catch (err: any) {
       if (err.status === 401) {
         setError('Naam of pincode onjuist');
-      } else if (err.status === 422) {
+      } else if (err.status === 422 && !isLogin) {
         setError('Deze naam is al in gebruik');
       } else {
-        setError('Er ging iets mis. Probeer het opnieuw.');
+        setError(err.data?.message || err.message || 'Er ging iets mis. Probeer het opnieuw.');
       }
     } finally {
       setIsLoading(false);

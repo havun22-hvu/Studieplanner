@@ -7,3 +7,4 @@ export { Header } from './Header';
 export { ProgressBar } from './ProgressBar';
 export { EmptyState } from './EmptyState';
 export { ColorPicker } from './ColorPicker';
+export { DatePicker } from './DatePicker';

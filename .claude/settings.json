@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "BELANGRIJK: Lees eerst .claude/context.md en volg de 3-fasen workflow uit CLAUDE.md. Geen code zonder Fase 1 (LEZEN) en Fase 2 (PLAN) + user approval."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "STOP: Voordat je dit bestand aanpast - heb je Fase 1 (docs citeren) en Fase 2 (plan + user approval) doorlopen? Zo niet, antwoord met {\"decision\": \"block\", \"reason\": \"Workflow niet gevolgd\"}. Zo ja, ga door."
+          }
+        ]
+      }
+    ]
+  }
+}

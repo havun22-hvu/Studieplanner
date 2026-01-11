@@ -1,21 +1,40 @@
 # Studieplanner - Claude Instructions
 
 ```
-╔══════════════════════════════════════════════════════════════════╗
-║  ⛔ STOP! LEES DIT VOORDAT JE IETS DOET                          ║
-║                                                                   ║
-║  GEEN CODE SCHRIJVEN VOORDAT JE ANTWOORD GEEFT OP:               ║
-║                                                                   ║
-║  1. "Wat staat er in de docs over dit onderwerp?"                ║
-║  2. "Waar staat dat?" (geef bestandsnaam + regelnummer)          ║
-║  3. "Is er iets inconsistent of ontbrekend?"                     ║
-║                                                                   ║
-║  PAS DAARNA mag je code voorstellen.                             ║
-║  Gebruiker moet EERST akkoord geven.                             ║
-║                                                                   ║
-║  ⚠️  Bij twijfel: /kb of vraag aan gebruiker                     ║
-╚══════════════════════════════════════════════════════════════════╝
+╔════════════════════════════════════════════════════════════════════╗
+║  ⛔ VERPLICHTE WORKFLOW - GEEN UITZONDERINGEN                      ║
+╠════════════════════════════════════════════════════════════════════╣
+║                                                                    ║
+║  FASE 1: LEZEN (verplicht VOOR code)                               ║
+║  □ Noem ALLE relevante docs voor deze taak                         ║
+║  □ CITEER specifieke regels (copy-paste, niet parafraseren)        ║
+║  □ Zeg: "Checklist Fase 1 compleet"                                ║
+║                                                                    ║
+║  FASE 2: PLAN (verplicht VOOR code)                                ║
+║  □ Beschrijf exacte aanpak + bestanden                             ║
+║  □ Vraag: "Mag ik beginnen met coderen?"                           ║
+║  □ WACHT op user "ja" - NIET doorgaan zonder approval              ║
+║                                                                    ║
+║  FASE 3: CODE (pas na "ja")                                        ║
+║  □ Verwijs naar docs in code comments                              ║
+║                                                                    ║
+║  ════════════════════════════════════════════════════════════════  ║
+║  ⚠️  CODE ZONDER FASE 1+2 = ONGELDIG                               ║
+║  ⚠️  User zegt "STOP" → terug naar Fase 1                          ║
+║  ⚠️  Geen uitzonderingen, ook niet voor "kleine" taken             ║
+║                                                                    ║
+║  📖 Volledige uitleg: .claude/docs/workflow-enforcement.md         ║
+╚════════════════════════════════════════════════════════════════════╝
 ```
+
+## User Commando's
+
+| Commando | Actie |
+|----------|-------|
+| `STOP` | Direct stoppen, terug naar Fase 1 |
+| `DOCS?` | Welke docs heb je gelezen? Citeer. |
+| `PLAN?` | Wat is je exacte aanpak? |
+| `OK` / `JA` | Door naar volgende fase |
 
 > **Type:** React Native + Expo (Android) + Laravel API
 > **Play Store:** (komt nog)

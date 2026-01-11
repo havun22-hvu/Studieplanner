@@ -1,32 +1,19 @@
+import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import { colors, typography, spacing } from '@/constants/theme';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AppProvider } from '@/store';
+import { RootNavigator } from '@/navigation';
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Studieplanner</Text>
-      <Text style={styles.subtitle}>React Native + Expo</Text>
-      <StatusBar style="auto" />
-    </View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <AppProvider>
+          <RootNavigator />
+          <StatusBar style="auto" />
+        </AppProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.md,
-  },
-  title: {
-    ...typography.h1,
-    color: colors.primary,
-    marginBottom: spacing.sm,
-  },
-  subtitle: {
-    ...typography.body,
-    color: colors.textSecondary,
-  },
-});

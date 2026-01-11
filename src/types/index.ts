@@ -2,119 +2,151 @@
 export interface User {
   id: number;
   name: string;
-  email: string;
-  is_verified: boolean;
+  role: 'student' | 'mentor';
+  studentCode?: string;
+  isPremium: boolean;
+  premiumUntil?: string;
 }
 
-export interface AuthState {
-  user: User | null;
-  token: string | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-}
-
-// Study task types
-export interface StudyTask {
-  id: string;
-  subjectId: string;
-  description: string;
-  plannedAmount: number; // hoeveel blz/opdrachten/etc gepland
-  unit: string; // 'blz', 'opdrachten', 'paragrafen', etc.
-  estimatedMinutes: number;
-  completed: boolean;
-}
-
-// Subject/Exam types
+// Subject & Task types
 export interface Subject {
   id: string;
   name: string;
   color: string;
-  examDate: string; // ISO date string
+  examDate: string;
   tasks: StudyTask[];
 }
 
-// Alarm settings for a session
-export interface SessionAlarm {
-  enabled: boolean;
-  minutesBefore: number; // minutes before session to alert
-  sound: boolean;
+export interface StudyTask {
+  id: string;
+  subjectId: string;
+  description: string;
+  estimatedMinutes: number;
+  plannedAmount: number;
+  unit: TaskUnit;
+  completed: boolean;
 }
 
-// Planned study session
+export type TaskUnit = 'blz' | 'opdrachten' | 'min video';
+
+// Session types
 export interface PlannedSession {
   id: string;
-  date: string; // ISO date string
-  taskId: string;
+  date: string;
+  hour: number | null;
   subjectId: string;
+  taskId: string;
   minutesPlanned: number;
-  minutesActual?: number; // actual time spent (filled after completion)
-  amountPlanned: number; // hoeveel blz/opdrachten gepland voor deze sessie
-  amountActual?: number; // hoeveel werkelijk gedaan
-  unit: string; // eenheid (blz, opdrachten, etc.)
+  minutesActual?: number;
+  amountPlanned: number;
+  amountActual?: number;
+  unit: TaskUnit;
   completed: boolean;
-  hour?: number; // Start hour (8-20), undefined = not yet scheduled to specific time
-  alarm?: SessionAlarm;
-  knowledgeRating?: number; // 1-10 geschatte kennisopname na overhoring
+  knowledgeRating?: number;
+  startedAt?: string;
+  stoppedAt?: string;
 }
 
-// Result of a completed session
-export interface SessionResult {
-  sessionId: string;
-  minutesSpent: number;
-  amountCompleted: number; // hoeveel blz/opdrachten gedaan
-  notes?: string;
+// Timer types
+export interface TimerState {
+  isRunning: boolean;
+  isPaused: boolean;
+  sessionId: string | null;
+  startTime: number | null;
+  pausedAt: number | null;
+  totalPausedMs: number;
 }
 
-// App state
+// Settings types
+export interface NotificationSettings {
+  alarmSound: string | null;
+  vibrate: boolean;
+  reminderEnabled: boolean;
+  reminderMinutes: number;
+  dailySummary: boolean;
+  dailySummaryTime: string;
+}
+
+// Mentor types
+export interface MentorStudent {
+  id: number;
+  name: string;
+  studentCode: string;
+  isStudying: boolean;
+  lastActivity?: string;
+}
+
+export interface InviteCode {
+  code: string;
+  expiresAt: string;
+}
+
+// Stats types (Premium)
+export interface StudyStats {
+  totalHours: {
+    week: number;
+    month: number;
+  };
+  bySubject: SubjectStats[];
+  completionRate: number;
+  trend: DayStats[];
+}
+
+export interface SubjectStats {
+  subjectId: string;
+  name: string;
+  color: string;
+  hours: number;
+}
+
+export interface DayStats {
+  date: string;
+  hours: number;
+}
+
+export interface LearningSpeed {
+  subjectId: string;
+  subjectName: string;
+  pagesPerHour?: number;
+  exercisesPerHour?: number;
+}
+
+// App State
 export interface AppState {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
   subjects: Subject[];
   sessions: PlannedSession[];
-  settings: Settings;
+  timer: TimerState;
+  activeSession: PlannedSession | null;
+  settings: {
+    dailyStudyMinutes: number;
+    weekendsOff: boolean;
+    notifications: NotificationSettings;
+  };
+  selectedWeek: string;
+  isPremium: boolean;
 }
 
-// User settings
-export interface Settings {
-  dailyStudyMinutes: number; // how many minutes per day available
-  breakDays: number[]; // 0 = Sunday, 6 = Saturday
-  studentName: string;
-  mentors: Mentor[];
-  shareCode?: string; // unique code for sharing agenda with mentors
-  // Notification settings
-  reminderEnabled?: boolean;
-  reminderTime?: string; // "HH:MM" format, e.g. "16:00"
-  // Pomodoro settings
-  pomodoroEnabled?: boolean;
-  pomodoroWorkMinutes?: number; // default 25
-  pomodoroBreakMinutes?: number; // default 5
-  // Alarm settings
-  alarmEnabled?: boolean;
-  alarmMinutesBefore?: number; // default 10
-}
+// Storage keys
+export const STORAGE_KEYS = {
+  USER: '@studieplanner/user',
+  TOKEN: '@studieplanner/token',
+  SUBJECTS: '@studieplanner/subjects',
+  SESSIONS: '@studieplanner/sessions',
+  SETTINGS: '@studieplanner/settings',
+  TIMER_STATE: '@studieplanner/timer',
+} as const;
 
-// Mentor/Parent info
-export interface Mentor {
-  id: string;
-  name: string;
-  email: string;
-  notifyOnStart: boolean;
-  notifyOnComplete: boolean;
-}
-
-// Common units for tasks (alleen meetbare eenheden)
-export const TASK_UNITS = ['blz', 'opdrachten', 'min video'] as const;
-
-// Preset colors for subjects (12 colors)
+// Subject colors
 export const SUBJECT_COLORS = [
-  '#ef4444', // red
-  '#f97316', // orange
-  '#eab308', // yellow
-  '#84cc16', // lime
-  '#22c55e', // green
-  '#14b8a6', // teal
-  '#06b6d4', // cyan
-  '#3b82f6', // blue
-  '#6366f1', // indigo
-  '#8b5cf6', // violet
-  '#d946ef', // fuchsia
-  '#ec4899', // pink
+  '#4f46e5', // Indigo
+  '#22c55e', // Green
+  '#f59e0b', // Amber
+  '#ef4444', // Red
+  '#8b5cf6', // Purple
+  '#06b6d4', // Cyan
+  '#ec4899', // Pink
+  '#64748b', // Slate
 ] as const;

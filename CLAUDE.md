@@ -17,8 +17,8 @@
 ╚══════════════════════════════════════════════════════════════════╝
 ```
 
-> **Type:** React/TypeScript PWA + Laravel API
-> **URL:** https://studieplanner.havun.nl
+> **Type:** React Native + Expo (Android) + Laravel API
+> **Play Store:** (komt nog)
 
 ## Rules (ALWAYS follow)
 
@@ -64,22 +64,37 @@
 
 ## Dit Project
 
-- **Frontend:** React PWA met Vite
+- **App:** React Native + Expo (Android only)
 - **Backend:** Laravel 12 API
 - **Auth:** Naam + 4-cijferige pincode
 - **Real-time:** WebSocket via HavunCore Reverb
+- **Model:** Freemium (betaling via website, niet Play Store)
 
 ### Lokaal starten
 ```bash
+# App (Android emulator of fysiek device)
+npx expo start
+
 # Backend
 cd D:\GitHub\Studieplanner-api && php artisan serve --port=8000
-
-# Frontend
-cd D:\GitHub\Studieplanner && npm run dev
 ```
 
 ## Knowledge Base
 
-Voor uitgebreide info:
-- **Context:** `.claude/context.md` (features, API's, database)
+### Project Docs (lees eerst context.md!)
+
+| Doc | Inhoud |
+|-----|--------|
+| `.claude/context.md` | Overzicht + links naar details |
+| `.claude/docs/features.md` | Alle functionaliteit |
+| `.claude/docs/freemium.md` | Gratis vs premium |
+| `.claude/docs/api.md` | Alle endpoints |
+| `.claude/docs/data-types.md` | Types + database |
+| `.claude/docs/tech-stack.md` | Packages + config |
+| `.claude/docs/ui/screens.md` | Alle schermen |
+| `.claude/docs/ui/components.md` | UI componenten |
+| `.claude/docs/ui/styling.md` | Kleuren, fonts |
+| `.claude/docs/ui/navigation.md` | Navigatie flow |
+
+### Externe KB
 - **HavunCore KB:** `D:\GitHub\HavunCore\docs\kb\`

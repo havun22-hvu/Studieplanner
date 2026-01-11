@@ -62,9 +62,10 @@ export function SubjectDetailScreen() {
         await updateSubject(subjectId, { name: name.trim(), color, examDate });
       }
       navigation.goBack();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving subject:', error);
-      Alert.alert('Fout', 'Kon vak niet opslaan');
+      const msg = error?.message || String(error);
+      Alert.alert('Fout', `Kon vak niet opslaan: ${msg}`);
     }
   };
 

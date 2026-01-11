@@ -5,18 +5,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "BELANGRIJK: Lees eerst .claude/context.md en volg de 3-fasen workflow uit CLAUDE.md. Geen code zonder Fase 1 (LEZEN) en Fase 2 (PLAN) + user approval."
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "STOP: Voordat je dit bestand aanpast - heb je Fase 1 (docs citeren) en Fase 2 (plan + user approval) doorlopen? Zo niet, antwoord met {\"decision\": \"block\", \"reason\": \"Workflow niet gevolgd\"}. Zo ja, ga door."
+            "prompt": "DOCS-FIRST workflow: 1) Lees relevante MD files, 2) Update MD files EERST - dit is belangrijker dan code, 3) Geef korte samenvatting van taak uit docs, 4) Dan pas coderen. NIETS VRAGEN - gewoon doen. VERBODEN: omzeilen via Bash/sed/Python."
           }
         ]
       }

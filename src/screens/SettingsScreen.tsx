@@ -71,7 +71,7 @@ export function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Header title="Instellingen" />
+      <Header title="Instellingen" showBack onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.content}>
         {/* Profile section */}

@@ -7,6 +7,7 @@ export type RootStackParamList = {
 export type StudentTabParamList = {
   Subjects: undefined;
   Agenda: undefined;
+  Stats: undefined;
   Settings: undefined;
 };
 
@@ -22,7 +23,6 @@ export type AgendaStackParamList = {
 
 export type SettingsStackParamList = {
   SettingsMain: undefined;
-  Stats: undefined;
 };
 
 export type MentorTabParamList = {

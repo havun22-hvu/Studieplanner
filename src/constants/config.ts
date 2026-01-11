@@ -25,15 +25,15 @@ export const endpoints = {
   user: '/api/user',
 
   // Subjects
-  subjects: '/api/subjects',
-  subject: (id: string) => `/api/subjects/${id}`,
+  subjects: '/api/student/subjects',
+  subject: (id: string) => `/api/student/subjects/${id}`,
 
   // Tasks
   tasks: (subjectId: string) => `/api/subjects/${subjectId}/tasks`,
   task: (id: string) => `/api/tasks/${id}`,
 
   // Sessions
-  sessions: '/api/sessions',
+  sessions: '/api/student/sessions',
   session: (id: string) => `/api/sessions/${id}`,
   sessionStart: '/api/session/start',
   sessionStop: '/api/session/stop',

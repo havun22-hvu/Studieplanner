@@ -26,13 +26,20 @@
         "FOREGROUND_SERVICE"
       ]
     },
+    "updates": {
+      "url": "https://u.expo.dev/8b82a3fc-e353-4058-9cd7-ae64971f0ca8"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "plugins": [
       [
         "expo-notifications",
         {
           "sounds": []
         }
-      ]
+      ],
+      "expo-updates"
     ],
     "extra": {
       "eas": {

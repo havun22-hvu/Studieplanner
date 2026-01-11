@@ -8,6 +8,7 @@ import {
   AgendaScreen,
   TimerScreen,
   SettingsScreen,
+  StatsScreen,
 } from '@/screens';
 import { colors } from '@/constants/theme';
 import type {
@@ -57,7 +58,7 @@ export function StudentNavigator() {
           height: 64,
           paddingBottom: 12,
           paddingTop: 8,
-          paddingHorizontal: 16,
+          paddingHorizontal: 8,
           backgroundColor: colors.surface,
           borderTopWidth: 1,
           borderTopColor: colors.border,
@@ -65,11 +66,11 @@ export function StudentNavigator() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           marginTop: 2,
         },
         tabBarItemStyle: {
-          paddingHorizontal: 8,
+          paddingHorizontal: 4,
         },
       }}
     >
@@ -90,6 +91,16 @@ export function StudentNavigator() {
           tabBarLabel: 'Planning',
           tabBarIcon: ({ color }) => (
             <Text style={{ fontSize: 20, color }}>📅</Text>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Stats"
+        component={StatsScreen}
+        options={{
+          tabBarLabel: 'Stats',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 20, color }}>📊</Text>
           ),
         }}
       />

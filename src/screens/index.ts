@@ -5,3 +5,4 @@ export { AgendaScreen } from './AgendaScreen';
 export { TimerScreen } from './TimerScreen';
 export { SettingsScreen } from './SettingsScreen';
 export { MentorDashboardScreen } from './MentorDashboardScreen';
+export { StatsScreen } from './StatsScreen';

@@ -330,3 +330,85 @@ location /downloads/ {
 - [ ] Testen: download + installatie
 - [ ] (Optioneel) Push notificatie sturen
 - [ ] (Optioneel) Release notes op website
+
+---
+
+## OTA Updates (EAS Update)
+
+> Snelle JavaScript/asset updates zonder nieuwe APK
+
+### Wanneer OTA vs APK
+
+| Type wijziging | Update methode |
+|----------------|----------------|
+| JS code, styling, images | OTA (instant) |
+| Nieuwe native modules | APK (rebuild) |
+| App.json config changes | APK (rebuild) |
+| Expo SDK upgrade | APK (rebuild) |
+
+### Channels
+
+| Channel | Branch | Gebruik |
+|---------|--------|---------|
+| `development` | development | Dev builds |
+| `preview` | preview | Testversie APK |
+| `production` | production | Release APK |
+
+### OTA Update Pushen
+
+```bash
+# Preview channel (test APK)
+npx eas update --channel preview --message "Beschrijving"
+
+# Production channel (release APK)  
+npx eas update --channel production --message "Beschrijving"
+```
+
+### Hoe werkt het
+
+1. App start op
+2. `expo-updates` checkt EAS server
+3. Als nieuwe update: download op achtergrond
+4. Volgende app start: nieuwe versie actief
+
+### Configuratie
+
+**app.json:**
+```json
+{
+  "expo": {
+    "updates": {
+      "url": "https://u.expo.dev/[PROJECT_ID]"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
+  }
+}
+```
+
+**eas.json:**
+```json
+{
+  "build": {
+    "preview": {
+      "channel": "preview"
+    },
+    "production": {
+      "channel": "production"
+    }
+  }
+}
+```
+
+### Checklist OTA Release
+
+- [ ] Code wijzigingen getest lokaal
+- [ ] Geen native changes (anders: nieuwe APK)
+- [ ] `npx eas update --channel [preview|production]`
+- [ ] Verify op EAS Dashboard
+
+### Links
+
+- Dashboard: https://expo.dev/accounts/havun22/projects/studieplanner/updates
+- Builds: https://expo.dev/accounts/havun22/projects/studieplanner/builds

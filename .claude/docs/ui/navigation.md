@@ -29,9 +29,10 @@ RootNavigator
     │   │   ├── AgendaScreen
     │   │   └── TimerScreen
     │   │
-    │   └── SettingsStack
+    │   ├── StatsScreen (premium)
+│   │
+│   └── SettingsStack
     │       ├── SettingsScreen
-    │       └── StatsScreen (premium)
     │
     └── [Mentor] BottomTabs
         ├── StudentsScreen
@@ -93,7 +94,6 @@ function SettingsStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="SettingsMain" component={SettingsScreen} />
-      <Stack.Screen name="Stats" component={StatsScreen} />
     </Stack.Navigator>
   );
 }
@@ -159,6 +159,7 @@ export type RootStackParamList = {
 export type StudentTabParamList = {
   Subjects: undefined;
   Agenda: undefined;
+  Stats: undefined;
   Settings: undefined;
 };
 

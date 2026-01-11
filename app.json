@@ -33,6 +33,12 @@
           "sounds": []
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "8b82a3fc-e353-4058-9cd7-ae64971f0ca8"
+      }
+    },
+    "owner": "havun22"
   }
 }

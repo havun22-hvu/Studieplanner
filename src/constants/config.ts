@@ -2,7 +2,7 @@
 // In production, these would come from environment variables
 
 const DEV_API_URL = 'http://localhost:8000';
-const PROD_API_URL = 'https://api.studieplanner.havun.nl';
+const PROD_API_URL = 'https://studieplanner.havun.nl';
 
 const DEV_WS_URL = 'ws://localhost:8080';
 const PROD_WS_URL = 'wss://ws.studieplanner.havun.nl';
@@ -19,10 +19,10 @@ export const config = {
 // API endpoints
 export const endpoints = {
   // Auth
-  login: '/api/auth/login',
-  register: '/api/auth/register',
-  logout: '/api/auth/logout',
-  user: '/api/auth/user',
+  login: '/api/login',
+  register: '/api/register',
+  logout: '/api/logout',
+  user: '/api/user',
 
   // Subjects
   subjects: '/api/subjects',

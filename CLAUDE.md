@@ -114,6 +114,8 @@ cd D:\GitHub\Studieplanner-api && php artisan serve --port=8000
 | `.claude/docs/ui/components.md` | UI componenten |
 | `.claude/docs/ui/styling.md` | Kleuren, fonts |
 | `.claude/docs/ui/navigation.md` | Navigatie flow |
+| `.claude/docs/deployment.md` | APK distributie + auto-updates |
+| `.claude/docs/backend-todo.md` | Backend aanpassingen |
 
 ### Externe KB
 - **HavunCore KB:** `D:\GitHub\HavunCore\docs\kb\`

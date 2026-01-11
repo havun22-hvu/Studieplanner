@@ -10,7 +10,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { Header, Card, Button, Modal, Input } from '@/components/common';
+import Constants from 'expo-constants';
+import * as Updates from 'expo-updates';
+import { Header, Card, Button, Modal } from '@/components/common';
 import { useAuth } from '@/store';
 import { api } from '@/services/api';
 import { colors, typography, spacing, borders } from '@/constants/theme';
@@ -25,6 +27,10 @@ export function SettingsScreen() {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const isPremium = user?.isPremium || false;
+  
+  // Version info
+  const appVersion = Constants.expoConfig?.version || '1.0.0';
+  const updateId = Updates.updateId || 'geen';
 
   const handleGenerateCode = async () => {
     setIsGenerating(true);
@@ -38,24 +44,6 @@ export function SettingsScreen() {
     } finally {
       setIsGenerating(false);
     }
-  };
-
-  const handleStatsPress = () => {
-    if (!isPremium) {
-      Alert.alert(
-        'Premium',
-        'Statistieken zijn alleen beschikbaar voor premium gebruikers.',
-        [
-          { text: 'Annuleren', style: 'cancel' },
-          {
-            text: 'Upgrade',
-            onPress: () => Linking.openURL('https://havun.nl/studieplanner/premium'),
-          },
-        ]
-      );
-      return;
-    }
-    navigation.navigate('Stats');
   };
 
   const handleLogout = () => {
@@ -122,19 +110,6 @@ export function SettingsScreen() {
           )}
         </Card>
 
-        {/* Stats section (premium) */}
-        <Text style={styles.sectionTitle}>
-          STATISTIEKEN {!isPremium && '🔒'}
-        </Text>
-        <Card style={styles.card}>
-          <TouchableOpacity style={styles.row} onPress={handleStatsPress}>
-            <Text style={[styles.label, !isPremium && styles.locked]}>
-              Bekijk statistieken
-            </Text>
-            <Text style={styles.arrow}>→</Text>
-          </TouchableOpacity>
-        </Card>
-
         {/* Mentor section (for students) */}
         {user?.role === 'student' && (
           <>
@@ -161,6 +136,12 @@ export function SettingsScreen() {
           variant="ghost"
           style={styles.logoutButton}
         />
+
+        {/* Version info */}
+        <View style={styles.versionInfo}>
+          <Text style={styles.versionText}>Versie {appVersion}</Text>
+          <Text style={styles.versionText}>Update: {updateId}</Text>
+        </View>
       </ScrollView>
 
       <Modal
@@ -193,6 +174,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.md,
+    paddingBottom: spacing.xxl,
   },
   sectionTitle: {
     ...typography.label,
@@ -233,11 +215,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: colors.textSecondary,
   },
-  locked: {
-    color: colors.textSecondary,
-  },
   logoutButton: {
     marginTop: spacing.xxl,
+  },
+  versionInfo: {
+    marginTop: spacing.xl,
+    alignItems: 'center',
+  },
+  versionText: {
+    ...typography.caption,
+    color: colors.textSecondary,
   },
   codeLabel: {
     ...typography.body,

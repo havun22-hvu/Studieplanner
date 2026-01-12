@@ -137,9 +137,9 @@ const styles = StyleSheet.create({
   },
   dayHeaderRow: {
     flexDirection: 'row',
-    backgroundColor: colors.surface,
+    backgroundColor: colors.glass,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.glassBorder,
     paddingVertical: spacing.sm,
   },
   timeColumnHeader: {
@@ -188,12 +188,12 @@ const styles = StyleSheet.create({
   dayColumn: {
     width: DAY_WIDTH,
     borderLeftWidth: 1,
-    borderLeftColor: colors.border,
+    borderLeftColor: colors.glassBorder,
   },
   hourCell: {
     height: HOUR_HEIGHT,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.glassBorder,
     padding: 1,
   },
 });

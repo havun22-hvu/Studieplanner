@@ -1,30 +1,36 @@
 import { Platform } from 'react-native';
 
-// Colors
+// Colors - SafeHavun Dark Theme
 export const colors = {
-  // Primary
-  primary: '#4f46e5',
-  primaryDark: '#4338ca',
-  primaryLight: '#e0e7ff',
+  // Primary - Gradient base colors
+  primary: '#10b981', // Emerald accent (SafeHavun bullish)
+  primaryDark: '#059669',
+  primaryLight: '#34d399',
 
-  // Neutrals
-  background: '#f8fafc',
-  surface: '#ffffff',
-  border: '#e2e8f0',
+  // Neutrals - Dark theme
+  background: '#1a1a2e', // SafeHavun secondary
+  backgroundGradientEnd: '#16213e', // SafeHavun primary
+  surface: 'rgba(255, 255, 255, 0.05)', // Glass effect
+  surfaceSolid: '#0f3460', // SafeHavun accent
+  border: 'rgba(255, 255, 255, 0.1)',
 
   // Text
-  textPrimary: '#1e293b',
-  textSecondary: '#64748b',
-  textInverse: '#ffffff',
+  textPrimary: '#f1f5f9', // Light gray for dark bg
+  textSecondary: '#94a3b8',
+  textInverse: '#1a1a2e',
 
   // Semantic
-  success: '#22c55e',
+  success: '#10b981', // Emerald (bullish)
   warning: '#f59e0b',
-  danger: '#ef4444',
+  danger: '#ef4444', // Red (bearish)
   info: '#3b82f6',
 
   // Overlay
-  overlay: 'rgba(0, 0, 0, 0.5)',
+  overlay: 'rgba(0, 0, 0, 0.7)',
+
+  // Glass effect
+  glass: 'rgba(255, 255, 255, 0.05)',
+  glassBorder: 'rgba(255, 255, 255, 0.1)',
 };
 
 // Subject colors

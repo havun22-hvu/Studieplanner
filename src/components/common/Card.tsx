@@ -33,9 +33,10 @@ export function Card({ children, onPress, style }: CardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.glass,
     borderRadius: borders.radius.md,
     padding: spacing.md,
-    ...shadows.sm,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
   },
 });

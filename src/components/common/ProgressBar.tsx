@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   },
   track: {
     flex: 1,
-    backgroundColor: colors.border,
+    backgroundColor: colors.glassBorder,
     borderRadius: borders.radius.full,
     overflow: 'hidden',
   },

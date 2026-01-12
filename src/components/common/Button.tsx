@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   secondary: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.glass,
     borderWidth: borders.width.thin,
     borderColor: colors.primary,
   },
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   dangerText: {
-    color: colors.textInverse,
+    color: colors.textPrimary,
   },
   ghostText: {
     color: colors.primary,

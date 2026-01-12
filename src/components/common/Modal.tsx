@@ -57,12 +57,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.overlay,
   },
   content: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceSolid,
     borderTopLeftRadius: borders.radius.lg,
     borderTopRightRadius: borders.radius.lg,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    borderBottomWidth: 0,
     padding: layout.modalPadding,
     maxHeight: '90%',
-    ...shadows.lg,
   },
   header: {
     flexDirection: 'row',

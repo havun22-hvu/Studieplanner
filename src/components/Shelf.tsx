@@ -60,9 +60,9 @@ export function Shelf({ sessions, subjects, onSessionPress }: ShelfProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.glass,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.glassBorder,
     paddingVertical: spacing.sm,
   },
   label: {
@@ -82,10 +82,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: spacing.md,
-    backgroundColor: colors.background,
+    backgroundColor: colors.glass,
     borderRadius: borders.radius.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.glassBorder,
     borderStyle: 'dashed',
   },
   emptyText: {

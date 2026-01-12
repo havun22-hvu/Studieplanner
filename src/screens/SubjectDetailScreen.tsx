@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.glassBorder,
   },
   unitButtonActive: {
     backgroundColor: colors.primary,

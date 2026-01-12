@@ -101,7 +101,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadows.md,
   },
   fabIcon: {
     fontSize: 28,

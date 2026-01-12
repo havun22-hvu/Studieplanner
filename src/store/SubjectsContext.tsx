@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import * as Crypto from 'expo-crypto';
 import { api } from '@/services/api';
 import { storage } from '@/services/storage';
 import { useAuth } from './AuthContext';
@@ -67,7 +67,7 @@ export function SubjectsProvider({ children }: { children: React.ReactNode }) {
   const addSubject = useCallback(async (data: Omit<Subject, 'id' | 'tasks'>): Promise<Subject> => {
     const newSubject: Subject = {
       ...data,
-      id: uuidv4(),
+      id: Crypto.randomUUID(),
       tasks: [],
     };
 
@@ -126,7 +126,7 @@ export function SubjectsProvider({ children }: { children: React.ReactNode }) {
   ): Promise<StudyTask> => {
     const newTask: StudyTask = {
       ...data,
-      id: uuidv4(),
+      id: Crypto.randomUUID(),
       subjectId,
       completed: false,
     };

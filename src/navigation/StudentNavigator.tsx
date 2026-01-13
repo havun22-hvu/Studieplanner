@@ -55,10 +55,10 @@ export function StudentNavigator() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          height: 64,
-          paddingBottom: 12,
-          paddingTop: 8,
-          paddingHorizontal: 8,
+          height: 80,
+          paddingBottom: 20,
+          paddingTop: 12,
+          paddingHorizontal: 12,
           backgroundColor: colors.surfaceSolid,
           borderTopWidth: 1,
           borderTopColor: colors.glassBorder,
@@ -66,11 +66,11 @@ export function StudentNavigator() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarLabelStyle: {
-          fontSize: 10,
-          marginTop: 2,
+          fontSize: 11,
+          marginTop: 4,
         },
         tabBarItemStyle: {
-          paddingHorizontal: 4,
+          paddingHorizontal: 8,
         },
       }}
     >

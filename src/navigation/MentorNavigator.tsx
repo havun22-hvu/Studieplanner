@@ -23,9 +23,9 @@ export function MentorNavigator() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          height: 64,
-          paddingBottom: 12,
-          paddingTop: 8,
+          height: 80,
+          paddingBottom: 20,
+          paddingTop: 12,
           paddingHorizontal: 16,
           backgroundColor: colors.surfaceSolid,
           borderTopWidth: 1,
@@ -35,10 +35,10 @@ export function MentorNavigator() {
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarLabelStyle: {
           fontSize: 11,
-          marginTop: 2,
+          marginTop: 4,
         },
         tabBarItemStyle: {
-          paddingHorizontal: 8,
+          paddingHorizontal: 12,
         },
       }}
     >

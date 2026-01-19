@@ -2,6 +2,16 @@
 
 > APK distributie en automatische updates
 
+## Website Status
+
+**studieplanner.havun.nl** toont momenteel een "Coming Soon" pagina.
+
+- Web app is uitgeschakeld (Android app vervangt deze)
+- Alle web routes redirecten naar coming-soon pagina
+- API endpoints (`/api/*`) blijven werken voor de Android app
+
+**Nginx config:** `/etc/nginx/sites-available/studieplanner`
+
 ## Distributie Strategie
 
 **Geen Play Store** - directe APK download via eigen server.

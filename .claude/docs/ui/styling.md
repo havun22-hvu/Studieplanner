@@ -4,8 +4,9 @@
 
 ## Design Filosofie
 
+- **SafeHavun Dark Theme:** Consistent met andere Havun apps
 - **Strak:** Geen onnodige decoratie
-- **Rustig:** Gedempte kleuren, geen felle accenten
+- **Glass effect:** Semi-transparante elementen met subtiele borders
 - **Functioneel:** Elk element heeft een doel
 - **Consistent:** Dezelfde spacing/kleuren overal
 
@@ -13,33 +14,37 @@
 
 ## Kleuren
 
-### Primary Palette
+### Primary Palette (SafeHavun Dark Theme)
 
 ```typescript
 const colors = {
-  // Primary
-  primary: '#4f46e5',      // Indigo - main actions
-  primaryDark: '#4338ca',  // Indigo dark - pressed state
-  primaryLight: '#e0e7ff', // Indigo light - subtle backgrounds
+  // Primary - Emerald accent
+  primary: '#10b981',      // Emerald - main actions
+  primaryDark: '#059669',  // Emerald dark - pressed state
+  primaryLight: '#34d399', // Emerald light
 
-  // Neutrals
-  background: '#f8fafc',   // Page background
-  surface: '#ffffff',      // Cards, modals
-  border: '#e2e8f0',       // Borders, dividers
+  // Neutrals - Dark theme
+  background: '#1a1a2e',         // SafeHavun secondary (dark)
+  backgroundGradientEnd: '#16213e', // SafeHavun primary
+  surface: 'rgba(255, 255, 255, 0.05)', // Glass effect
+  surfaceSolid: '#0f3460',       // Solid dark blue (tab bar)
+  border: 'rgba(255, 255, 255, 0.1)',
 
-  // Text
-  textPrimary: '#1e293b',  // Main text
-  textSecondary: '#64748b', // Secondary/muted text
-  textInverse: '#ffffff',  // Text on dark backgrounds
+  // Text - Light for dark backgrounds
+  textPrimary: '#f1f5f9',  // Light gray
+  textSecondary: '#94a3b8', // Muted gray
+  textInverse: '#1a1a2e',  // Dark text on light backgrounds
 
   // Semantic
-  success: '#22c55e',      // Green - completed, positive
+  success: '#10b981',      // Emerald - completed, positive
   warning: '#f59e0b',      // Amber - attention needed
   danger: '#ef4444',       // Red - errors, delete
   info: '#3b82f6',         // Blue - informational
 
-  // Overlay
-  overlay: 'rgba(0, 0, 0, 0.5)', // Modal backdrop
+  // Overlay & Glass
+  overlay: 'rgba(0, 0, 0, 0.7)',
+  glass: 'rgba(255, 255, 255, 0.05)',
+  glassBorder: 'rgba(255, 255, 255, 0.1)',
 };
 ```
 
@@ -62,7 +67,7 @@ const subjectColors = [
 
 ### Dark Mode
 
-Niet geïmplementeerd in v1. Eventueel later toevoegen.
+**Geïmplementeerd:** App gebruikt standaard het SafeHavun dark theme. Geen light mode.
 
 ---
 
@@ -322,7 +327,7 @@ const layout = {
   headerHeight: 56,
 
   // Tab Bar
-  tabBarHeight: 56,
+  tabBarHeight: 80,  // Ruime footer
 
   // Agenda
   hourHeight: 60,      // Pixels per uur

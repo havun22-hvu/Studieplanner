@@ -61,9 +61,11 @@
 ```json
 {
   "date-fns": "^3.0.0",
-  "uuid": "^9.0.0"
+  "expo-crypto": "~12.8.0"
 }
 ```
+
+> **Note:** `uuid` package vervangen door `expo-crypto` (jan 2026) vanwege compatibiliteit met Expo. Gebruik `Crypto.randomUUID()` voor UUID generatie.
 
 ---
 
